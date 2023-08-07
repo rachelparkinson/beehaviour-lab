@@ -37,7 +37,7 @@ def MEMs(i2c, start_time, duration, Audio_file):
     print("Recording completed.")
 
     # Create an audio file and save the recorded data
-    output_file = Audio_file
+    output_file = audio_file
     with wave.open(output_file, "wb") as wav_file:
         wav_file.setnchannels(1)  # Mono audio channel
         wav_file.setsampwidth(2)  # 2 bytes per sample (16-bit audio)
