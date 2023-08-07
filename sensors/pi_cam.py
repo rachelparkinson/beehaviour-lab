@@ -3,7 +3,6 @@ import time
 
 def cam(video_file, duration, resolution, framerate):
 
-
     with picamera.PiCamera() as camera:
         camera.resolution = resolution
         camera.framerate = framerate
