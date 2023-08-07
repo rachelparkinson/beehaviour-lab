@@ -9,18 +9,19 @@ def lights(R_LED_PIN, W_LED_PIN, LED_time):
     GPIO.setup(R_LED_PIN, GPIO.OUT)
     GPIO.setup(W_LED_PIN, GPIO.OUT)
     
-    #Turn on white LED panel
-    GPIO.output(W_LED_PIN, GPIO.HIGH)
+    while True:
+        #Turn on white LED panel
+        GPIO.output(W_LED_PIN, GPIO.HIGH)
 
-    #wait 5s
-    time.sleep(LED_time)
+        #wait 5s
+        time.sleep(LED_time)
 
-    #Turn off white LED panel, turn on red LEDs
-    GPIO.output(W_LED_PIN, GPIO.LOW)
-    GPIO.output(R_LED_PIN, GPIO.HIGH)
+        #Turn off white LED panel, turn on red LEDs
+        GPIO.output(W_LED_PIN, GPIO.LOW)
+        GPIO.output(R_LED_PIN, GPIO.HIGH)
 
-    #wait 5s
-    time.sleep(LED_time)
+        #wait 5s
+        time.sleep(LED_time)
 
-    #turn off red LEDs
-    GPIO.output(R_LED_PIN, GPIO.LOW)
+        #turn off red LEDs
+        GPIO.output(R_LED_PIN, GPIO.LOW)
