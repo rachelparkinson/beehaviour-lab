@@ -1,15 +1,26 @@
 
 import time
+from datetime import date
 import threading
 import queue
 from control/LED_panels.py import lights
-from sensors/temp_rh.py import DHT
 from control/OLED_display.py import OLED
+from sensors/temp_rh.py import DHT
+from sensors/MEMs.py import MEMs
+
+
+
+# dd/mm/YY
+
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
+    #get date and start time
+    day = today.strftime("%y%m%d")
+    start_time = time.time()
+    
     # Set up pins and timing for components
     
     #Total recording time (24 hours = 86400s)
@@ -23,20 +34,21 @@ if __name__ == "__main__":
     
     #DHT pin
     DHT_PIN = 23
-    DHT_file = 'DHT_sensor.txt'
+    DHT_file = day + '_DHT.txt'
     
-    #OLED display
+    #OLED display & MEMs
     i2c = busio.I2C(board.SCL, board.SDA)
+    duration = Rec_time
+    Audio_file = day + '_audio.wav'
     
     #create thread-safe queue
     data_queue = queue.Queue()
     
-    start_time = time.time()
-    
     #Create threads for each task, pass relevant parameters
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time,))
     DHT_thread = threading.Thread(target=DHT, args=(DHT_PIN, DHT_file, data_queue, start_time,))
-    OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c))
+    OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c,))
+    MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, Audio_file, start_time,))
     
     #Start threads
     lights_thread.start()

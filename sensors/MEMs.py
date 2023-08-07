@@ -1,35 +1,45 @@
-import RPi.GPIO as GPIO
 import time
+import board
+import busio
+import adafruit_ads1x15.ads1015 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+import numpy as np
+import wave
+#import pyaudio <-- pip install this
 
-#Use appropriate GPIO pin, make it a variable for use
-R_LED_PIN = 20
-W_LED_PIN = 21
+def MEMs(i2c, start_time, duration, Audio_file):
+    
+    # Define the ADC object
+    ads = ADS.ADS1015(i2c)
+    chan = AnalogIn(ads, ADS.P0)
 
-#to use standard GPIO numbers:
-GPIO.setmode(GPIO.BCM)
+    # Parameters for audio recording
+    sample_rate = 44100  # Sample rate (44100 Hz is standard for CD-quality audio)
+    num_samples = int(sample_rate * duration)
 
-#set as output pin (GPIO.IN = input pin)
-GPIO.setup(R_LED_PIN, GPIO.OUT)
-GPIO.setup(W_LED_PIN, GPIO.OUT)
+    # Initialize audio buffer
+    audio_data = np.zeros(num_samples, dtype=np.int16)
 
-while True:
-    #Turn on white LED panel
-    GPIO.output(W_LED_PIN, GPIO.HIGH)
+    # Calculate the expected end time for recording
+    end_time = time.time() + duration
 
-    #wait 5s
-    time.sleep(5)
+    # Record audio data from the microphone
+    print("Recording...")
+    for i in range(num_samples):
+        audio_data[i] = chan.value
 
-    #Turn off white LED panel, turn on red LEDs
-    GPIO.output(W_LED_PIN, GPIO.LOW)
-    GPIO.output(R_LED_PIN, GPIO.HIGH)
+        # Check if the current time has exceeded the end time
+        if time.time() >= end_time:
+            break
 
-    #wait 5s
-    time.sleep(5)
+        time.sleep(1 / sample_rate)
 
-    #turn off red LEDs
-    GPIO.output(R_LED_PIN, GPIO.LOW)
+    print("Recording completed.")
 
-#reset default mode "cleanup"
-GPIO.cleanup()
-
-exit
+    # Create an audio file and save the recorded data
+    output_file = Audio_file
+    with wave.open(output_file, "wb") as wav_file:
+        wav_file.setnchannels(1)  # Mono audio channel
+        wav_file.setsampwidth(2)  # 2 bytes per sample (16-bit audio)
+        wav_file.setframerate(sample_rate)
+        wav_file.writeframes(audio_data.tobytes())
