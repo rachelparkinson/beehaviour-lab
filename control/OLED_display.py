@@ -9,11 +9,11 @@ import time
 import adafruit_dht
 import queue
 
-# Set the GPIO mode to BCM (Broadcom SOC channel numbering)
-GPIO.setmode(GPIO.BCM)
-
 def OLED(data_queue, start_time, i2c):
     
+    # Set the GPIO mode to BCM (Broadcom SOC channel numbering)
+    GPIO.setmode(GPIO.BCM)
+
     # Initialize I2C communication for the OLED display
     display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
     
@@ -24,7 +24,7 @@ def OLED(data_queue, start_time, i2c):
             
             #display data on OLED panel
             display.fill(0)
-            display.text(f"{temp:.1f} C, "{rh:.1f}% rh, 0, 0, 1)
+            display.text(f"{temp:.1f} C, {rh:.1f}% rh", 0, 0, 1)
             display.text(f"REC time: {str(elapsed_time)}", 0, 24, 1)
             display.show()
             
