@@ -1,15 +1,19 @@
 
 import time
 import threading
-from LED_panels.py import lights
-
-
+import queue
+from control/LED_panels.py import lights
+from sensors/temp_rh.py import DHT
+from control/OLED_display.py import OLED
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
     # Set up pins and timing for components
+    
+    #Total recording time (24 hours = 86400s)
+    Rec_time = 24 * 60 * 60
 
     #LED panels
     R_LED_PIN = 20
@@ -17,17 +21,41 @@ if __name__ == "__main__":
     LED_hrs = 12
     LED_time = LED_hrs * 3600
     
+    #DHT pin
+    DHT_PIN = 23
+    DHT_file = 'DHT_sensor.txt'
+    
+    #OLED display
+    i2c = busio.I2C(board.SCL, board.SDA)
+    
+    #create thread-safe queue
+    data_queue = queue.Queue()
+    
+    start_time = time.time()
+    
     #Create threads for each task, pass relevant parameters
-    lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time,))
+    lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time,))
+    DHT_thread = threading.Thread(target=DHT, args=(DHT_PIN, DHT_file, data_queue, start_time,))
+    OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c))
     
     #Start threads
     lights_thread.start()
+    DHT_thread.start()
+    OLED_thread.start()
+    
+    # Wait for Rec_time (e.g., 24 hours)
+    time.sleep(Rec_time)
+    
+    # Stop threads
+    stop_event.set()
     
     #Wait for all threads to complete
     lights_thread.join()
+    DHT_thread.join()
+    OLED_thread.join()
     
     print("All tasks completed")
 
-
-
+#clean up pins
+GPIO.cleanup()
 
