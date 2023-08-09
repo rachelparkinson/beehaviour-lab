@@ -3,7 +3,7 @@ import time
 
 def lights(R_LED_PIN, W_LED_PIN, LED_time):
     #use standard GPIO numbers:
-    GPIO.setmode(GPIO.BCM)
+    #GPIO.setmode(GPIO.BCM) #is this necessary anywhere??
 
     #set as output pin (GPIO.IN = input pin)
     GPIO.setup(R_LED_PIN, GPIO.OUT)
@@ -13,7 +13,7 @@ def lights(R_LED_PIN, W_LED_PIN, LED_time):
         #Turn on white LED panel
         GPIO.output(W_LED_PIN, GPIO.HIGH)
 
-        #wait 5s
+        #wait "LED_time" duration
         time.sleep(LED_time)
 
         #Turn off white LED panel, turn on red LEDs
