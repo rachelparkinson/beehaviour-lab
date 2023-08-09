@@ -1,20 +1,24 @@
 
 import time
-from datetime import date
 import threading
 import queue
-from control/LED_panels.py import lights
-from control/OLED_display.py import OLED
-from sensors/temp_rh.py import DHT
-from sensors/MEMs.py import MEMs
-from sensors/pi_cam.py import cam
+import busio
+import board
+import RPi.GPIO as GPIO
+
+from LED_panels import lights
+from OLED_display import OLED
+from temp_rh import DHT
+from MEMs import MEMs
+from pi_cam import cam
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
     #get date and start time
-    day = today.strftime("%y%m%d")
+    current_time = time.localtime()
+    day = time.strftime("%y%m%d", current_time)
     start_time = time.time()
     
     # Set up pins and timing for components
@@ -29,7 +33,7 @@ if __name__ == "__main__":
     LED_hrs = 12
     LED_time = LED_hrs * 3600
     
-    LED_time = 30 #test at 30s per LED colour
+    LED_time = 5 #test at 30s per LED colour
     
     #DHT pin
     DHT_PIN = 23
@@ -49,34 +53,31 @@ if __name__ == "__main__":
     data_queue = queue.Queue()
     
     #Create threads for each task, pass relevant parameters
-    lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time,))
-    DHT_thread = threading.Thread(target=DHT, args=(DHT_PIN, DHT_file, data_queue, start_time,))
-    OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c,))
-    MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time,))
-    cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time, ))
+    lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
+    #DHT_thread = threading.Thread(target=DHT, args=(DHT_PIN, DHT_file, data_queue, start_time))
+    #OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c))
+    #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
+    #cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
    
     #Start threads
     lights_thread.start()
-    DHT_thread.start()
-    OLED_thread.start()
-    MEMs_thread.start()
-    cam_thread.start()
+    #DHT_thread.start()
+    #OLED_thread.start()
+    #MEMs_thread.start()
+    #cam_thread.start()
     
     # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
     time.sleep(Rec_time + 15)
     
-    # Stop threads
-    stop_event.set()
-    
     #Wait for all threads to complete
     lights_thread.join()
-    DHT_thread.join()
-    OLED_thread.join()
-    MEMs_thread.join()
-    cam_thread.join()
+    #DHT_thread.join()
+    #OLED_thread.join()
+    #MEMs_thread.join()
+    #cam_thread.join()
     
     print("All tasks completed")
 
 #clean up pins
-GPIO.cleanup()
+#GPIO.cleanup()
 

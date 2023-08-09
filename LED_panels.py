@@ -1,15 +1,13 @@
 import RPi.GPIO as GPIO
 import time
 
-def lights(R_LED_PIN, W_LED_PIN, LED_time):
-    #use standard GPIO numbers:
-    #GPIO.setmode(GPIO.BCM) #is this necessary anywhere??
+def lights(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time):
 
     #set as output pin (GPIO.IN = input pin)
     GPIO.setup(R_LED_PIN, GPIO.OUT)
     GPIO.setup(W_LED_PIN, GPIO.OUT)
     
-    while True:
+    while time.time() - start_time < Rec_time:
         #Turn on white LED panel
         GPIO.output(W_LED_PIN, GPIO.HIGH)
 
