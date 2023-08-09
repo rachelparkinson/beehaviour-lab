@@ -20,7 +20,7 @@ def lights(R_LED_PIN, W_LED_PIN, LED_time):
         GPIO.output(W_LED_PIN, GPIO.LOW)
         GPIO.output(R_LED_PIN, GPIO.HIGH)
 
-        #wait 5s
+        #Wait LED_time duration
         time.sleep(LED_time)
 
         #turn off red LEDs
