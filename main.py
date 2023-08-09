@@ -62,8 +62,8 @@ if __name__ == "__main__":
     MEMs_thread.start()
     cam_thread.start()
     
-    # Wait for Rec_time (e.g., 24 hours)
-    time.sleep(Rec_time + 60)
+    # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
+    time.sleep(Rec_time + 15)
     
     # Stop threads
     stop_event.set()
