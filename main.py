@@ -20,13 +20,16 @@ if __name__ == "__main__":
     # Set up pins and timing for components
     
     #Total recording time (24 hours = 86400s)
-    Rec_time = 24 * 60 * 60
-
+    #Rec_time = 24 * 60 * 60
+    Rec_time = 60 #one minute tester
+    
     #LED panels
     R_LED_PIN = 20
     W_LED_PIN = 21
     LED_hrs = 12
     LED_time = LED_hrs * 3600
+    
+    LED_time = 30 #test at 30s per LED colour
     
     #DHT pin
     DHT_PIN = 23
