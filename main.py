@@ -4,8 +4,6 @@ import threading
 import queue
 import busio
 import board
-import RPi.GPIO as GPIO
-import csv
 
 from LED_panels import lights
 from OLED_display import OLED
@@ -56,14 +54,14 @@ if __name__ == "__main__":
     #Create threads for each task, pass relevant parameters
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
-    #OLED_thread = threading.Thread(target=OLED, args=(data_queue, start_time, i2c))
+    OLED_thread = threading.Thread(target=OLED, args=(data_queue, Rec_time, start_time, i2c))
     #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
     #cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
    
     #Start threads
     lights_thread.start()
     DHT_thread.start()
-    #OLED_thread.start()
+    OLED_thread.start()
     #MEMs_thread.start()
     #cam_thread.start()
     
@@ -73,7 +71,7 @@ if __name__ == "__main__":
     #Wait for all threads to complete
     lights_thread.join()
     DHT_thread.join()
-    #OLED_thread.join()
+    OLED_thread.join()
     #MEMs_thread.join()
     #cam_thread.join()
     
@@ -81,4 +79,3 @@ if __name__ == "__main__":
 
 #clean up pins
 #GPIO.cleanup()
-
