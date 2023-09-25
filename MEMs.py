@@ -7,7 +7,7 @@ import numpy as np
 import wave
 #import pyaudio <-- pip install this
 
-def MEMs(i2c, start_time, duration, audio_file):
+def MEMs(data_queue, i2c, audio_file, duration, start_time):
     
     # Define the ADC object
     ads = ADS.ADS1015(i2c)

@@ -55,14 +55,14 @@ if __name__ == "__main__":
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
     OLED_thread = threading.Thread(target=OLED, args=(data_queue, Rec_time, start_time, i2c))
-    #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
+    MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
     #cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
    
     #Start threads
     lights_thread.start()
     DHT_thread.start()
     OLED_thread.start()
-    #MEMs_thread.start()
+    MEMs_thread.start()
     #cam_thread.start()
     
     # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     lights_thread.join()
     DHT_thread.join()
     OLED_thread.join()
-    #MEMs_thread.join()
+    MEMs_thread.join()
     #cam_thread.join()
     
     print("All tasks completed")
