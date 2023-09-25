@@ -45,7 +45,7 @@ def cam(framerate, resolution, video_file, duration, start_time):
     # Save timestamps to a text file 
     with open(videop_file.replace('.h264', '_timestamps.txt'), 'w') as f:
         for timestamp in timestamps:
-            f.write(f"{timestamp}\n)
+            f.write(f"{timestamp}\n")
     # or as a JSON file
     with open(video_file.replace('.h264', '_timestamps.json'), 'w') as f:
         json.dump(timestamps, f)
