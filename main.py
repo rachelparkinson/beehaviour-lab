@@ -1,20 +1,22 @@
-
 import time
 import threading
 import queue
 import busio
 import board
+import RPi.GPIO as GPIO
 
 from LED_panels import lights
 from OLED_display import OLED
 from temp_rh import DHT
 from MEMs import MEMs
 from pi_cam import cam
+from buzz_LED import led_buzzer_control
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
+    
     #get date and start time
     current_time = time.localtime()
     day = time.strftime("%y%m%d", current_time)
@@ -33,6 +35,12 @@ if __name__ == "__main__":
     LED_time = LED_hrs * 3600
     
     LED_time = 5 #test at 30s per LED colour
+    
+    # LED and Buzzer
+    LED_BUZZER_PIN = 24
+    buzz_length = 1 # duration of buzz
+    buzz_space = 5 # time to wait until next buzz
+    buzz_file = day + '_buzz.json'
     
     #DHT pin board.D23
     #DHT_PIN = 'D23'
@@ -56,14 +64,16 @@ if __name__ == "__main__":
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
     OLED_thread = threading.Thread(target=OLED, args=(data_queue, Rec_time, start_time, i2c))
     MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
-    #cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
-   
+    cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
+    led_buzzer_thread = threading.Thread(target=led_buzzer_control, args=(duration, LED_BUZZER_PIN, buzz_length, buzz_space, buzz_file))
+    
     #Start threads
     lights_thread.start()
     DHT_thread.start()
     OLED_thread.start()
     MEMs_thread.start()
-    #cam_thread.start()
+    cam_thread.start()
+    led_buzzer_thread.start()
     
     # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
     time.sleep(Rec_time + 15)
@@ -73,9 +83,11 @@ if __name__ == "__main__":
     DHT_thread.join()
     OLED_thread.join()
     MEMs_thread.join()
-    #cam_thread.join()
+    cam_thread.join()
+    led_buzzer_thread.join()
     
     print("All tasks completed")
 
 #clean up pins
-#GPIO.cleanup()
+GPIO.cleanup()
+
