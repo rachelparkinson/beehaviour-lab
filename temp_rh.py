@@ -2,7 +2,7 @@ import time
 #first time, pip install adafruit-circuitpython-dht
 import adafruit_dht
 import board
-import csv
+import json
 import datetime
 
 
@@ -11,6 +11,7 @@ def DHT(DHT_file, data_queue, start_time, Rec_time):
     dht_sensor = adafruit_dht.DHT22(board.D23, use_pulseio=False) 
     last_temp = None
     last_rh = None
+    data_list = []
     
     while time.time() - start_time < Rec_time:
         try:
@@ -29,9 +30,9 @@ def DHT(DHT_file, data_queue, start_time, Rec_time):
                 #put data into the queue
                 data_queue.put((temp, rh))
             
-                with open(DHT_file, 'a') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([formatted_time, temp, rh])
+                #append data to the list
+                data_point = {"time": formatted_time, "temperature": temp, "humidity": rh}
+                data_list.append(data_point)
                     
             else:
                 print("Failed to retrieve data from sensor.")
@@ -39,11 +40,9 @@ def DHT(DHT_file, data_queue, start_time, Rec_time):
         except Exception as e:
             print("An error occurred:", str(e))
             
-            #Print values to console
-            #print(f"Temp: {temp:.1f} °C, Humidity: {rh:.1f}%") 
-
-        #except RuntimeError as e:
-        #    print(f"Error reading data from DHT sensor: {e}")
-
         # Wait for 2 seconds before reading data again
         time.sleep(2)
+    
+    # Save the data_list to the JSON file
+    with open(DHT_file, 'w') as json_file:
+        json.dump(data_list, json_file, indent=4)
