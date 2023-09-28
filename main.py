@@ -12,6 +12,7 @@ from temp_rh import DHT
 from MEMs import MEMs
 from pi_cam import cam
 from buzz_LED import led_buzzer_control
+from button_wait import wait_for_button
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
@@ -36,6 +37,9 @@ if __name__ == "__main__":
     #Total recording time (24 hours = 86400s)
     #Rec_time = 24 * 60 * 60
     Rec_time = 60 #one minute tester
+    
+    # Push button pin
+    BUTTON_PIN = 5 #GPIO5
     
     #LED panels
     R_LED_PIN = 20
@@ -67,6 +71,9 @@ if __name__ == "__main__":
     
     #create thread-safe queue
     data_queue = queue.Queue()
+    
+    #Use button to initialize programme:
+    wait_for_button(BUTTON_PIN)
     
     #Create threads for each task, pass relevant parameters
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
