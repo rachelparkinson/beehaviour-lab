@@ -5,6 +5,7 @@ import busio
 import board
 import RPi.GPIO as GPIO
 import os
+import adafruit_ssd1306
 
 from LED_panels import lights
 from OLED_display import OLED, OLED_wipe
@@ -19,6 +20,8 @@ from button_wait import wait_for_button
 
 if __name__ == "__main__":
     
+    #Set Name
+    Name = "Behaviour Lab 01"
     #get date and start time
     current_time = time.localtime()
     day = time.strftime("%y%m%d", current_time)
@@ -74,7 +77,11 @@ if __name__ == "__main__":
     data_queue = queue.Queue()
     
     #Wipe the OLED screen
-    OLED_wipe(data_queue, i2c)
+    GPIO.setmode(GPIO.BCM)
+    display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
+    display.fill(0)
+    
+    OLED_wipe(Name, data_queue, i2c)
     
     #Use button to initialize programme:
     wait_for_button(BUTTON_PIN)
@@ -82,7 +89,7 @@ if __name__ == "__main__":
     #Create threads for each task, pass relevant parameters
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
-    OLED_thread = threading.Thread(target=OLED, args=(data_queue, Rec_time, start_time, i2c))
+    OLED_thread = threading.Thread(target=OLED, args=(Name, data_queue, Rec_time, start_time, i2c))
     #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
     cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
     led_buzzer_thread = threading.Thread(target=led_buzzer_control, args=(duration, BUZZER_PIN, LED_PIN, buzz_length, buzz_space, buzz_file))
