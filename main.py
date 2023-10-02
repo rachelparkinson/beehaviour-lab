@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO
 import os
 
 from LED_panels import lights
-from OLED_display import OLED
+from OLED_display import OLED, OLED_wipe
 from temp_rh import DHT
 from MEMs import MEMs
 from pi_cam import cam
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     
     #Total recording time (24 hours = 86400s)
     #Rec_time = 24 * 60 * 60
-    Rec_time = 60 #one minute tester
+    Rec_time = 20 #one minute tester
     
     # Push button pin
     BUTTON_PIN = 5 #GPIO5
@@ -50,8 +50,9 @@ if __name__ == "__main__":
     LED_time = 5 #test at 30s per LED colour
     
     # LED and Buzzer
-    LED_BUZZER_PIN = 24
-    buzz_length = 1 # duration of buzz
+    BUZZER_PIN = 24
+    LED_PIN = 25
+    buzz_length = 0.5 # duration of buzz
     buzz_space = 5 # time to wait until next buzz
     buzz_file = os.path.join(day_folder, day + '_buzz.json')
     
@@ -72,6 +73,9 @@ if __name__ == "__main__":
     #create thread-safe queue
     data_queue = queue.Queue()
     
+    #Wipe the OLED screen
+    OLED_wipe(data_queue, i2c)
+    
     #Use button to initialize programme:
     wait_for_button(BUTTON_PIN)
     
@@ -79,15 +83,15 @@ if __name__ == "__main__":
     lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, LED_time, start_time, Rec_time))
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
     OLED_thread = threading.Thread(target=OLED, args=(data_queue, Rec_time, start_time, i2c))
-    MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
+    #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
     cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
-    led_buzzer_thread = threading.Thread(target=led_buzzer_control, args=(duration, LED_BUZZER_PIN, buzz_length, buzz_space, buzz_file))
+    led_buzzer_thread = threading.Thread(target=led_buzzer_control, args=(duration, BUZZER_PIN, LED_PIN, buzz_length, buzz_space, buzz_file))
     
     #Start threads
     lights_thread.start()
     DHT_thread.start()
     OLED_thread.start()
-    MEMs_thread.start()
+    #MEMs_thread.start()
     cam_thread.start()
     led_buzzer_thread.start()
     
@@ -98,7 +102,7 @@ if __name__ == "__main__":
     lights_thread.join()
     DHT_thread.join()
     OLED_thread.join()
-    MEMs_thread.join()
+    #MEMs_thread.join()
     cam_thread.join()
     led_buzzer_thread.join()
     
