@@ -5,7 +5,9 @@ import busio
 import board
 import RPi.GPIO as GPIO
 import os
+import subprocess
 import adafruit_ssd1306
+from picamera2 import Picamera2, Preview
 
 from LED_panels import lights
 from OLED_display import OLED, OLED_wipe
@@ -14,6 +16,7 @@ from MEMs import MEMs
 from pi_cam import cam
 from buzz_LED import led_buzzer_control
 from button_wait import wait_for_button
+from kill_camera import kill_camera_processes
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
@@ -72,6 +75,12 @@ if __name__ == "__main__":
     resolution = (1280, 720)
     framerate = 30
     video_file = os.path.join(day_folder, day + '_video.h264')
+
+    # Make sure camera isn't already running - kill it.
+    kill_camera_processes()
+
+    #Initialize camera:
+    picam2 = Picamera2()
     
     #create thread-safe queue
     data_queue = queue.Queue()
@@ -91,7 +100,7 @@ if __name__ == "__main__":
     DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, Rec_time, start_time))
     OLED_thread = threading.Thread(target=OLED, args=(Name, data_queue, Rec_time, start_time, i2c))
     #MEMs_thread = threading.Thread(target=MEMs, args=(data_queue, i2c, audio_file, duration, start_time))
-    cam_thread = threading.Thread(target=cam, args=(framerate, resolution, video_file, duration, start_time))
+    cam_thread = threading.Thread(target=cam, args=(picam2, framerate, resolution, video_file, duration, start_time))
     led_buzzer_thread = threading.Thread(target=led_buzzer_control, args=(duration, BUZZER_PIN, LED_PIN, buzz_length, buzz_space, buzz_file))
     
     #Start threads
@@ -105,6 +114,9 @@ if __name__ == "__main__":
     # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
     time.sleep(Rec_time + 15)
     
+    # join threads
+    print("Joining threads...")
+    
     #Wait for all threads to complete
     lights_thread.join()
     DHT_thread.join()
@@ -112,6 +124,9 @@ if __name__ == "__main__":
     #MEMs_thread.join()
     cam_thread.join()
     led_buzzer_thread.join()
+    
+    #Check to be sure camera is closed
+    picam2.close()
     
     print("All tasks completed")
 
