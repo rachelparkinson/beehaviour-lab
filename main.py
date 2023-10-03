@@ -6,6 +6,8 @@ import board
 import RPi.GPIO as GPIO
 import os
 import subprocess
+import signal
+import sys
 import adafruit_ssd1306
 from picamera2 import Picamera2, Preview
 
@@ -16,12 +18,16 @@ from MEMs import MEMs
 from pi_cam import cam
 from buzz_LED import led_buzzer_control
 from button_wait import wait_for_button
-from kill_camera import kill_camera_processes
+from kill_camera import kill_camera_processes, signal_handler
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
+     # Make sure camera isn't already running - kill it.
+    #kill_camera_processes()
+    #signal.signal(signal.SIGTERM, signal_handler)
+    #time.sleep(5)
     
     #Set Name
     Name = "Behaviour Lab 01"
@@ -73,11 +79,8 @@ if __name__ == "__main__":
     
     #pi cam
     resolution = (1280, 720)
-    framerate = 30
+    framerate = 60
     video_file = os.path.join(day_folder, day + '_video.h264')
-
-    # Make sure camera isn't already running - kill it.
-    kill_camera_processes()
 
     #Initialize camera:
     picam2 = Picamera2()
