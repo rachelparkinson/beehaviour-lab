@@ -23,16 +23,13 @@ from threads.time_clapper import time_clapper
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
-     # Make sure camera isn't already running - kill it.
-    #kill_camera_processes()
-    #signal.signal(signal.SIGTERM, signal_handler)
-    #time.sleep(5)
-    
+        
     #Set Name
-    Name = "Buzz_Box_1"
+    Name = "rPi1"
     
     #Set rPi number:
     rPi_num = 1
+    
     #get date and start time
     current_time = time.localtime()
     day = time.strftime("%y%m%d", current_time)
@@ -106,10 +103,10 @@ if __name__ == "__main__":
         
         OLED_wipe(Name, data_queue, i2c) 
         # Filenames (as per day_folder)
-        buzz_file = os.path.join(day_folder, day + '_buzz.json')
-        DHT_file = os.path.join(day_folder, day + '_DHT.json')
-        audio_file = os.path.join(day_folder, day + '_audio.wav')
-        video_file = os.path.join(day_folder, day + '_video.h264')
+        buzz_file = os.path.join(day_folder, day + Name + '_buzz.json')
+        DHT_file = os.path.join(day_folder, day + Name + '_DHT.json')
+        audio_file = os.path.join(day_folder, day + Name + '_audio.wav')
+        video_file = os.path.join(day_folder, day + Name + '_video.h264')
 
         #Initialize camera:
         picam2 = Picamera2()
