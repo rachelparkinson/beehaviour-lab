@@ -9,10 +9,7 @@ import subprocess
 import signal
 import sys
 import adafruit_ssd1306
-import json
 from picamera2 import Picamera2, Preview
-
-from load_config.py import load_config
 
 from threads.LED_panels import lights
 from threads.OLED_display import OLED, OLED_wipe
@@ -26,48 +23,20 @@ from threads.time_clapper import time_clapper
 # Setup duration of recordings directly from this file.
 
 if __name__ == "__main__":
+        
+    #Set Name
+    Name = "rPi2"
     
-    # Load the configuration for this Raspberry Pi
-    config = load_config()
+    #Set rPi number:
+    rPi_num = 2
     
-    ####################
-    ## METADATA INPUT ##
-    ####################
-    day = "240202" # Date (YEARMONTHDAY e.g., 240131)
-    Rec_time = 300 #recording segment time (s)
-    reps = 48 #how many recordings in loop
-    spaces = 1500 #space between end of one recording and beginning of next (s)
+    #get date and start time
+    current_time = time.localtime()
+    day = time.strftime("%y%m%d", current_time)
+    start_time = time.time()
     
-    ########################
-    ## don't change this:
-    Name = config["Name"]
-    rPi_num = config["rPi_num"]
-    start_time = time.time() #get start time
-    ssd_path = config["ssd_path"] # Name folder on SSD to save files
-    #################################################################
-    
-    # Define metadata for .json file
-    metadata = {
-        "treatment": "TMX",
-        "concentration": "0.1",
-        "unit": "xLD50",
-        "species": "Bombus terrestris",
-        "group": "individual",
-        "experimenter": "Kieran Walter",
-        "day": day,
-        "segment length": Rec_time,
-        "number segments": reps,
-        "time between segments": spaces,
-        "rPi_name": Name,
-        "rPi start time": start_time,
-        "Additional description": "None"
-    }
-    
-    metadata_name = os.path.join(ssd_path, day + '_' + Name + 'metadata.json')
-    
-    with open(metadata_name, 'w') as file:
-        json.dump(metadata, file, indent=4)
-    
+    # Name folder on SSD to save files
+    ssd_path = '/home/rPi2/myssd/'
     #day_folder = os.path.join(ssd_path, day)
     
     def create_incremental_subfolder(base_folder):
@@ -83,12 +52,23 @@ if __name__ == "__main__":
         os.makedirs(subfolder_path)
         return subfolder_path
     
-    if not os.path.exists(os.path.join(ssd_path, day)):
-        os.makedirs(os.path.join(ssd_path, day))
+    if not os.path.exists(os.path.join(ssd_path, "test")):
+        os.makedirs(os.path.join(ssd_path, "test"))
+    
+    ############################################
+        ## Set up PINS ##
+
+    #Total recording time (24 hours = 86400s)
+    #Rec_time = 24 * 60 * 60
+    Rec_time = 5 #recording segment time (s)
+    
     
     ###############################
-    ## Loop to repeat threads ##
-    ############################
+        ## Loop to repeat threads ##
+        ############################
+    reps = 2
+    spaces = 3
+    
     
     for replicate in range(1, reps + 1):
         
@@ -96,7 +76,7 @@ if __name__ == "__main__":
         
         GPIO.cleanup()
     
-        day_folder = create_incremental_subfolder(os.path.join(ssd_path, day))
+        day_folder = create_incremental_subfolder(os.path.join(ssd_path, "test"))
         #LED panels
         R_LED_PIN = 16
         W_LED_PIN = 21
@@ -121,20 +101,28 @@ if __name__ == "__main__":
         display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
         display.fill(0)
         
-        OLED_wipe(Name, data_queue, i2c)
-        
+        OLED_wipe(Name, data_queue, i2c) 
         # Filenames (as per day_folder)
-        buzz_file = os.path.join(day_folder, day + '_' + Name + '_buzz.json')
-        DHT_file = os.path.join(day_folder, day + '_' + Name + '_DHT.json')
-        audio_file = os.path.join(day_folder, day + '_' + Name + '_audio.wav')
-        video_file = os.path.join(day_folder, day + '_' + Name + '_video.h264')
+        buzz_file = os.path.join(day_folder, day + Name + '_buzz.json')
+        DHT_file = os.path.join(day_folder, day + Name + '_DHT.json')
+        audio_file = os.path.join(day_folder, day + Name + '_audio.wav')
+        video_file = os.path.join(day_folder, day + Name + '_video.h264')
 
         #Initialize camera:
         picam2 = Picamera2()
         
+        #Wipe the OLED screen
+        GPIO.setmode(GPIO.BCM)
+        display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
+        display.fill(0)
+        
+        OLED_wipe(Name, data_queue, i2c)
+        
+        
         #Create threads for each task, pass relevant parameters
         lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, Rec_time))
         DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, start_time, seg_time, Rec_time))
+        #OLED_thread = threading.Thread(target=OLED, args=(Name, data_queue, Rec_time, start_time, i2c))
         USB_mic_thread = threading.Thread(target=record_audio, args=(duration, audio_file))
         cam_thread = threading.Thread(target=cam, args=(picam2, framerate, resolution, video_file, duration, start_time))
         time_clapper_thread = threading.Thread(target=time_clapper, args=(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file))
@@ -142,12 +130,14 @@ if __name__ == "__main__":
         #Start threads
         lights_thread.start()
         DHT_thread.start()
+        #OLED_thread.start()
         cam_thread.start()
+        #led_buzzer_thread.start()
         USB_mic_thread.start()
         time_clapper_thread.start()
         
-        # Wait for Rec_time
-        time.sleep(Rec_time)
+        # Wait for Rec_time (e.g., 24 hours), plus 15s buffer
+        time.sleep(Rec_time) 
         
         #start a timer
         time1 = time.time()
@@ -175,8 +165,9 @@ if __name__ == "__main__":
             # Check to see whether there is any time left on counter:
             if runover_time < spaces:
                 time.sleep(spaces - runover_time)
-            else
+            else:
                 time.sleep(1)
 
 #clean up pins
 GPIO.cleanup()
+
