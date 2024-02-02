@@ -2,7 +2,25 @@ import os
 import subprocess
 import threading
 import time
+import re
 
+def find_usb_mic():
+    try:
+        # Run the arecord -l command and capture its output
+        result = subprocess.check_output(['arecord', '-l']).decode('utf-8')
+        
+        # Look for lines that describe a USB mic
+        matches = re.finditer(r'card (\d+):.*?device (\d+): USB', result, re.MULTILINE)
+        
+        for match in matches:
+            # Extract the card and device numbers
+            card, device = match.groups()
+            return int(card), int(device)
+        
+        raise ValueError("USB microphone not found.")
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Error executing arecord command.")
+    
 def record_audio(Rec_time, audio_file, card, device):
     # Define command to record audio using arecord
     card_device = 'plughw:' + str(card) + str(device)
