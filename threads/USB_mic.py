@@ -5,7 +5,7 @@ import time
 
 def record_audio(Rec_time, audio_file, card, device):
     # Define command to record audio using arecord
-    card_device = 'plughw:' + card + device
+    card_device = 'plughw:' + str(card) + str(device)
     
     arecord_command = [
         'arecord',
@@ -19,3 +19,21 @@ def record_audio(Rec_time, audio_file, card, device):
     
     # Run the arecord command
     subprocess.run(arecord_command)
+
+def convert_wav_to_flac(wav_file):
+    flac_file = os.path.splitext(wav_file)[0] + '.flac'
+    
+    ffmpeg_command = [
+        'ffmpeg',
+        '-i', wav_file,  # Input file
+        '-vn',  # No video
+        '-ar', '90000',  # Sample rate
+        '-ac', '1',  # Audio channels
+        '-compression_level', '12',  # Highest compression level
+        '-c:a', 'flac',  # Codec audio flac
+        flac_file  # Output file
+    ]
+    
+    # Run the ffmpeg command to convert wav to flac
+    subprocess.run(ffmpeg_command)
+    #return flac_file

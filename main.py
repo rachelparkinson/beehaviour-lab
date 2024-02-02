@@ -13,14 +13,13 @@ import json
 from picamera2 import Picamera2, Preview
 
 from load_config import load_config
-from mic_search import find_usb_mic
+from threads.mic_search import find_usb_mic
 
 from threads.LED_panels import lights
 from threads.OLED_display import OLED, OLED_wipe
 from threads.temp_rh import DHT
-from threads.pi_cam import cam
-from threads.buzz_LED import led_buzzer_control
-from threads.USB_mic import record_audio
+from threads.pi_cam import record_video, convert_h264_to_mp4
+from threads.USB_mic import record_audio, convert_wav_to_flac
 from threads.time_clapper import time_clapper
 
 # main file for the rPi beehaviour box. 
@@ -83,7 +82,7 @@ if __name__ == "__main__":
         day_folder = create_incremental_subfolder(os.path.join(ssd_path, day))
         
         # Define metadata for .json file
-         metadata = {
+        metadata = {
             "treatment": config["treatment"],
             "concentration": config["concentration"],
             "unit": config["unit"],
@@ -109,20 +108,19 @@ if __name__ == "__main__":
         GPIO.cleanup()
     
         #LED panels
-        R_LED_PIN = 16
-        W_LED_PIN = 21
+        R_LED_PIN = config["R_LED_PIN"]
+        W_LED_PIN = config["W_LED_PIN"]
         
         # LED and Buzzer
-        BUZZER_PIN = 24
-        LED_PIN = 25
+        BUZZER_PIN = config["BUZZER_PIN"]
+        LED_PIN = config["LED_PIN"]
         
         #OLED display & MEMs
         i2c = busio.I2C(board.SCL, board.SDA)
-        duration = Rec_time
         
         #pi cam
-        resolution = (1920, 1080) #max res with high framerate
-        framerate = 60 # comes out at ~47.9 fps
+        resolution = tuple(config["resolution"]) #max res with high framerate
+        framerate = config["framerate"] # comes out at ~47.9 fps
         
         #create thread-safe queue
         data_queue = queue.Queue()
@@ -146,8 +144,8 @@ if __name__ == "__main__":
         #Create threads for each task, pass relevant parameters
         lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, Rec_time))
         DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, start_time, seg_time, Rec_time))
-        USB_mic_thread = threading.Thread(target=record_audio, args=(duration, audio_file, card, device))
-        cam_thread = threading.Thread(target=cam, args=(picam2, framerate, resolution, video_file, duration, start_time))
+        USB_mic_thread = threading.Thread(target=record_audio, args=(Rec_time, audio_file, card, device))
+        cam_thread = threading.Thread(target=record_video, args=(picam2, framerate, resolution, video_file, Rec_time))
         time_clapper_thread = threading.Thread(target=time_clapper, args=(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file))
         
         #Start threads
@@ -176,7 +174,19 @@ if __name__ == "__main__":
         #Check to be sure camera is closed
         picam2.close()
         
-        print("All tasks completed")
+        print("Threads joined, starting compression & conversion of video & audio files")
+        
+        # Threads for converting / compressing audio & video
+        video_comp_thread = threading.Thread(target=convert_h264_to_mp4, args=(video_file))
+        audio_comp_thread = threading.Thread(target=convert_wav_to_flac, args=(audio_file))
+        
+        video_comp_thread.start()
+        audio_comp_thread.start()
+        
+        video_comp_thread.join()
+        audio_comp_thread.join()
+        
+        print("Compression & conversion complete.")
         
         time2 = time.time()
         runover_time = time2-time1
@@ -186,8 +196,8 @@ if __name__ == "__main__":
             # Check to see whether there is any time left on counter:
             if runover_time < spaces:
                 time.sleep(spaces - runover_time)
-            else
-                time.sleep(1)
+            else:
+                time.sleep(1) #if not, just get on with next recording
 
 #clean up pins
 GPIO.cleanup()

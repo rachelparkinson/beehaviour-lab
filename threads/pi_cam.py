@@ -13,7 +13,7 @@ import cv2
 import json
 import subprocess
 
-def cam(picam2, framerate, resolution, video_file, duration, start_time):
+def record_video(picam2, framerate, resolution, video_file, Rec_time):
     
     #setup timestamp 
     hour = int(time.strftime('%H'))
@@ -52,7 +52,7 @@ def cam(picam2, framerate, resolution, video_file, duration, start_time):
         # Start recording
         picam2.start_recording(encoder, video_file)
         
-        time.sleep(duration)
+        time.sleep(Rec_time)
     
         # stop recording
         picam2.stop_recording()
@@ -66,25 +66,6 @@ def cam(picam2, framerate, resolution, video_file, duration, start_time):
     
         with open(video_file.replace('.h264', '_metadata.json'), 'w') as f:
             json.dump(output_data, f)
-        
-        # After stopping recording, convert and compress video
-        mp4_file = video_file.replace('.h264', '.mp4')
-        
-        ffmpeg_command = [
-            'ffmpeg',
-            #'-y', #Automatically overwrite output files
-            '-i', video_file, #input file
-            '-c:v', 'libx264', #Specify video codec
-            '-crf', '28', # CRF value for compression
-            '-preset', 'fast', #preset for compression-efficiency tradeoff
-            '-f', 'mp4', #Output file format
-            mp4_file #output file
-        ]
-        
-        subprocess.run(ffmpeg_command, check=True)
-        
-        #Optionally, delete the original .h264 file
-        os.remove(video_file)
     
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -92,3 +73,26 @@ def cam(picam2, framerate, resolution, video_file, duration, start_time):
     finally:
         # Close the camera
         picam2.close()
+
+
+def convert_h264_to_mp4(h264_video_file):
+    mp4_file = h264_video_file.replace('.h264', '.mp4')
+    ffmpeg_command = [
+        'ffmpeg',
+        '-i', h264_video_file,  # Input file
+        '-c:v', 'libx264',  # Video codec
+        '-crf', '28',  # CRF value for compression
+        '-preset', 'fast',  # Preset for compression-efficiency tradeoff
+        '-f', 'mp4',  # Output file format
+        mp4_file  # Output file
+    ]
+    
+    try:
+        subprocess.run(ffmpeg_command, check=True)
+        print(f"Converted {h264_video_file} to {mp4_file}")
+        
+        # Optionally, delete the original .h264 file
+        os.remove(h264_video_file)
+        
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to convert {h264_video_file} to {mp4_file}: {e}")
