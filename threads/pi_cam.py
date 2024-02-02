@@ -12,7 +12,7 @@ import os
 import cv2
 import json
 
-def cam(picam2, framerate, resolution, video_file, duration, start_time):
+def cam(picam2, framerate, resolution, video_file, Rec_time, start_time):
     # Initialize camera
     #picam2 = Picamera2() #Note: this is now done on main.py file
     
@@ -51,7 +51,7 @@ def cam(picam2, framerate, resolution, video_file, duration, start_time):
         # Start recording
         picam2.start_recording(encoder, video_file)
         
-        time.sleep(duration)
+        time.sleep(Rec_time)
     
         # stop recording
         picam2.stop_recording()

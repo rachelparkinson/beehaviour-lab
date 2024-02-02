@@ -1,0 +1,14 @@
+
+{
+    "treatment": "CTL",
+    "concentration": "2",
+    "unit": "Molar",
+    "species": "Bombus terrestris",
+    "group": "individual",
+    "experimenter": "Kieran Walter",
+    "Additional description": "None",
+    "Name": "rPi1",
+    "rPi_num": 1,
+    "ssd_path": "/home/rPi1/myssd/"
+  }
+  

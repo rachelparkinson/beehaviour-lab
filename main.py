@@ -12,7 +12,8 @@ import adafruit_ssd1306
 import json
 from picamera2 import Picamera2, Preview
 
-from load_config.py import load_config
+from load_config import load_config
+from mic_search import find_usb_mic
 
 from threads.LED_panels import lights
 from threads.OLED_display import OLED, OLED_wipe
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     reps = 48 #how many recordings in loop
     spaces = 1500 #space between end of one recording and beginning of next (s)
     
-    ########################
+    ################################################################
     ## don't change this:
     Name = config["Name"]
     rPi_num = config["rPi_num"]
@@ -46,27 +47,7 @@ if __name__ == "__main__":
     ssd_path = config["ssd_path"] # Name folder on SSD to save files
     #################################################################
     
-    # Define metadata for .json file
-    metadata = {
-        "treatment": "TMX",
-        "concentration": "0.1",
-        "unit": "xLD50",
-        "species": "Bombus terrestris",
-        "group": "individual",
-        "experimenter": "Kieran Walter",
-        "day": day,
-        "segment length": Rec_time,
-        "number segments": reps,
-        "time between segments": spaces,
-        "rPi_name": Name,
-        "rPi start time": start_time,
-        "Additional description": "None"
-    }
-    
-    metadata_name = os.path.join(ssd_path, day + '_' + Name + 'metadata.json')
-    
-    with open(metadata_name, 'w') as file:
-        json.dump(metadata, file, indent=4)
+
     
     #day_folder = os.path.join(ssd_path, day)
     
@@ -85,6 +66,11 @@ if __name__ == "__main__":
     
     if not os.path.exists(os.path.join(ssd_path, day)):
         os.makedirs(os.path.join(ssd_path, day))
+        
+    
+    # Check USB mic card & device
+    card, device = find_usb_mic()
+    print(f"Found USB microphone on card {card}, device {device}")
     
     ###############################
     ## Loop to repeat threads ##
@@ -94,9 +80,34 @@ if __name__ == "__main__":
         
         seg_time = time.time()
         
+        day_folder = create_incremental_subfolder(os.path.join(ssd_path, day))
+        
+        # Define metadata for .json file
+         metadata = {
+            "treatment": config["treatment"],
+            "concentration": config["concentration"],
+            "unit": config["unit"],
+            "species": config["species"],
+            "group": config["group"],
+            "experimenter": config["experimenter"],
+            "day": config["day"],
+            "segment length": Rec_time,
+            "number segments": reps,
+            "time between segments": spaces,
+            "rPi_name": Name,
+            "rPi start time": start_time,
+            "current segment start time": seg_time,
+            "current segment number": replicate,
+            "Additional description": config["Additional description"]
+        }
+    
+        metadata_name = os.path.join(day_folder, Name + 'metadata.json')
+    
+        with open(metadata_name, 'w') as file:
+            json.dump(metadata, file, indent=4)
+        
         GPIO.cleanup()
     
-        day_folder = create_incremental_subfolder(os.path.join(ssd_path, day))
         #LED panels
         R_LED_PIN = 16
         W_LED_PIN = 21
@@ -135,7 +146,7 @@ if __name__ == "__main__":
         #Create threads for each task, pass relevant parameters
         lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, Rec_time))
         DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, start_time, seg_time, Rec_time))
-        USB_mic_thread = threading.Thread(target=record_audio, args=(duration, audio_file))
+        USB_mic_thread = threading.Thread(target=record_audio, args=(duration, audio_file, card, device))
         cam_thread = threading.Thread(target=cam, args=(picam2, framerate, resolution, video_file, duration, start_time))
         time_clapper_thread = threading.Thread(target=time_clapper, args=(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file))
         
