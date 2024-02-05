@@ -1,22 +1,26 @@
 
 {
-    "treatment": "CTL",
-    "concentration": "2",
-    "unit": "Molar",
-    "species": "Bombus terrestris",
-    "group": "individual",
-    "experimenter": "Kieran Walter",
-    "Additional description": "None",
-
-    "Name": "rPi1",
-    "rPi_num": 1,
-    "ssd_path": "/home/rPi1/myssd/",
-
-    "R_LED_PIN": 16,
-    "W_LED_PIN": 21,
-    "BUZZER_PIN": 24,
-    "LED_PIN": 25,
-    "resolution": [1920, 1080],
-    "framerate": 60
-  }
+  "treatment": "CTL",
+  "concentration": "2",
+  "unit": "Molar",
+  "species": "Bombus terrestris",
+  "group": "individual",
+  "experimenter": "Kieran Walter",
+  "Additional description": "None",
   
+  "day": "240205",
+  "Rec_time": 5,
+  "reps": 2,
+  "spaces": 20,
+
+  "Name": "rPi2",
+  "rPi_num": 2,
+  "ssd_path": "/home/rPi2/myssd/",
+
+  "R_LED_PIN": 16,
+  "W_LED_PIN": 21,
+  "BUZZER_PIN": 24,
+  "LED_PIN": 25,
+  "resolution": [1920, 1080],
+  "framerate": 60
+}

@@ -1,9 +1,3 @@
-#Installations:
-#sudo apt install -y python3-opencv
-#sudo apt install -y opencv-data
-#pip3 install tflite-runtime
-#sudo apt install -y ffmpeg
-
 from picamera2 import MappedArray, Picamera2, Preview
 from picamera2.encoders import H264Encoder, Quality
 from picamera2.outputs import FfmpegOutput
@@ -77,7 +71,7 @@ def record_video(picam2, framerate, resolution, video_file, Rec_time):
 
 def convert_h264_to_mp4(h264_video_file):
     mp4_file = h264_video_file.replace('.h264', '.mp4')
-    ffmpeg_command = [
+    ffmpeg_vid_command = [
         'ffmpeg',
         '-i', h264_video_file,  # Input file
         '-c:v', 'libx264',  # Video codec
@@ -88,7 +82,7 @@ def convert_h264_to_mp4(h264_video_file):
     ]
     
     try:
-        subprocess.run(ffmpeg_command, check=True)
+        subprocess.run(ffmpeg_vid_command, check=True)
         print(f"Converted {h264_video_file} to {mp4_file}")
         
         # Optionally, delete the original .h264 file
