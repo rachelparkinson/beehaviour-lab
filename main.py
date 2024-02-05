@@ -13,13 +13,12 @@ import json
 from picamera2 import Picamera2, Preview
 
 from load_config import load_config
-from threads.mic_search import find_usb_mic
 
 from threads.LED_panels import lights
 from threads.OLED_display import OLED, OLED_wipe
 from threads.temp_rh import DHT
 from threads.pi_cam import record_video, convert_h264_to_mp4
-from threads.USB_mic import record_audio, convert_wav_to_flac
+from threads.USB_mic import find_usb_mic, record_audio, convert_wav_to_flac
 from threads.time_clapper import time_clapper
 
 # main file for the rPi beehaviour box. 
