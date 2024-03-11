@@ -1,6 +1,6 @@
-# beehaviour-box
+# BeehaviourLab
 
-This project is for the Beehaviour Box, a raspberry pi-based behavioural arena for recording the behaviour of insects using video and sound. Project is written for a Raspberry Pi Model 4B.
+This project is for the BeehaviourLab, a raspberry pi-based behavioural arena for recording the behaviour of insects using video and sound. Project is written for a Raspberry Pi Model 4B.
 
 # components
 1. Raspberry Pi Model 4B 4 GB
