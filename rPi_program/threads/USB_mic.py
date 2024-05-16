@@ -53,7 +53,7 @@ def convert_wav_to_flac(wav_file):
         flac_file  # Output file
     ]
     
-    # Run the ffmpeg command to convert wav to flac
+    # Run the ffmpeg command to convert wav to flac:
     #subprocess.run(ffmpeg_command)
     #return flac_file
     
@@ -62,7 +62,7 @@ def convert_wav_to_flac(wav_file):
         print(f"Converted {wav_file} to {flac_file}")
         
         # Optionally, delete the original .wav file
-        #os.remove(wav_file)
+        os.remove(wav_file)
         
     except subprocess.CalledProcessError as e:
         print(f"Failed to convert {wav_file} to {flac_file}: {e}")

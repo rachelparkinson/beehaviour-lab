@@ -1,3 +1,9 @@
+#Installations:
+#sudo apt install -y python3-opencv
+#sudo apt install -y opencv-data
+#pip3 install tflite-runtime
+#sudo apt install -y ffmpeg
+
 from picamera2 import MappedArray, Picamera2, Preview
 from picamera2.encoders import H264Encoder, Quality
 from picamera2.outputs import FfmpegOutput
@@ -58,7 +64,7 @@ def record_video(picam2, framerate, resolution, video_file, Rec_time):
             'timestamps': timestamps
             }
     
-        with open(video_file.replace('.h264', '_metadata.json'), 'w') as f:
+        with open(video_file.replace('.h264', 'frames_metadata.json'), 'w') as f:
             json.dump(output_data, f)
     
     except Exception as e:

@@ -1,4 +1,5 @@
 import json
+import os
 
 def load_config(filename="config.json"):
     """Load the configuration from a JSON file located in the same directory as this script."""

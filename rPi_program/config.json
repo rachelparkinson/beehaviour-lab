@@ -1,0 +1,28 @@
+
+{
+    "treatment": "CTL",
+    "ID": "CTL1",
+    "concentration": "1",
+    "unit": "M",
+    "species": "Bombus terrestris",
+    "group": "individual",
+    "experimenter": "Rachel Parkinson",
+    "Additional description": "None",
+    
+    "day": "240319",
+    "Rec_time": 300,
+    "reps": 48,
+    "spaces": 1500,
+
+    "Name": "rPi1",
+    "rPi_num": 1,
+    "ssd_path": "/home/rPi1/myssd/",
+
+    "R_LED_PIN": 16,
+    "W_LED_PIN": 21,
+    "BUZZER_PIN": 24,
+    "LED_PIN": 25,
+    "resolution": [1920, 1080],
+    "framerate": 60
+  }
+  
