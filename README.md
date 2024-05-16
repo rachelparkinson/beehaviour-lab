@@ -8,7 +8,7 @@ aparatus_templates --> dxf files for laser cutting the Beehaviour Lab stand and 
 
 rPi_program --> Raspberry Pi program for controlling Beehaviour Lab and recording data
 
-post_processing --> code for processing video and audio files in post
+vid_audio_processing --> code for adjusting frame rate of video and combining video and audio files
 
 database --> code for scraping experiment data from .json metadata files and filing in MongoDB
 
