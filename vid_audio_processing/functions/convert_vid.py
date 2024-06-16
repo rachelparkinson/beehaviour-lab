@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 def convert_h264_to_mp4(h264_video_file):
     mp4_file = h264_video_file.replace('.h264', '.mp4')

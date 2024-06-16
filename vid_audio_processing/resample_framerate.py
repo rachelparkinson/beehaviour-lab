@@ -8,7 +8,7 @@ from functions.video_speed import adjust_video_speed, change_video_fps
 # Define the base path to the directory containing the subfolders
 
 # Base directory containing many folders
-main_directory = 'R:/Bee audio and video recordings/Kieran_data/14.03 transfers'
+main_directory = 'R:/Bee audio and video recordings/MC_data_Ellie'
 
 # List all folders in the main directory
 folders = [f for f in os.listdir(main_directory) if os.path.isdir(os.path.join(main_directory, f))]
