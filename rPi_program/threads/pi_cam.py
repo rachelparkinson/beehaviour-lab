@@ -64,7 +64,7 @@ def record_video(picam2, framerate, resolution, video_file, Rec_time):
             'timestamps': timestamps
             }
     
-        with open(video_file.replace('.h264', 'frames_metadata.json'), 'w') as f:
+        with open(video_file.replace('.h264', 'frames_.json'), 'w') as f:
             json.dump(output_data, f)
     
     except Exception as e:
@@ -80,6 +80,7 @@ def convert_h264_to_mp4(h264_video_file):
     ffmpeg_vid_command = [
         'ffmpeg',
         '-i', h264_video_file,  # Input file
+        '-r', '45', # Framerate
         '-c:v', 'libx264',  # Video codec
         '-crf', '28',  # CRF value for compression
         '-preset', 'fast',  # Preset for compression-efficiency tradeoff

@@ -50,25 +50,9 @@ def time_clapper(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file):
     current_timestamp = time.time()
     timestamps.append(current_timestamp)
     
-    # Wait time before SECOND buzz (half way through recording)
-    time.sleep(Rec_time/2) 
     
-    current_timestamp = time.time()
-    timestamps.append(current_timestamp)
-    
-    # Control the LED and buzzer using the selected permutation
-    for digit in selected_permutation:
-        if digit == 0:
-            activate_components(0.1)
-        else:
-            activate_components(0.25)
-        time.sleep(0.1)
-    
-    current_timestamp = time.time()
-    timestamps.append(current_timestamp)
-    
-    # Wait time before THIRD buzz (10s before end of recording)
-    time.sleep(Rec_time/2 - 10) 
+    # Wait time before second buzz (10s before end of recording)
+    time.sleep(Rec_time - 15) 
     
     current_timestamp = time.time()
     timestamps.append(current_timestamp)

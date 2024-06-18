@@ -5,17 +5,14 @@ import busio
 import board
 import RPi.GPIO as GPIO
 import os
-import subprocess
-import signal
-import sys
 import adafruit_ssd1306
 import json
-from picamera2 import Picamera2, Preview
+from picamera2 import Picamera2
 
 from load_config import load_config
 
 from threads.LED_panels import lights
-from threads.OLED_display import OLED, OLED_wipe
+from threads.OLED_display import OLED_wipe
 from threads.temp_rh import DHT
 from threads.pi_cam import record_video, convert_h264_to_mp4
 from threads.USB_mic import find_usb_mic, record_audio, convert_wav_to_flac
@@ -85,8 +82,12 @@ if __name__ == "__main__":
         metadata = {
             "treatment": config["treatment"],
             "ID": config["ID"],
-            "concentration": config["concentration"],
-            "unit": config["unit"],
+            "test compound": "CTL"
+            "concentration": "0",
+            "unit": "M",
+            "background solution": "sucrose",
+            "background solution conc (M)": "1",
+            "pollen Y/N": config["pollen Y/N"],
             "species": config["species"],
             "group": config["group"],
             "experimenter": config["experimenter"],
@@ -98,7 +99,14 @@ if __name__ == "__main__":
             "rPi start time": start_time,
             "current segment start time": seg_time,
             "current segment number": replicate,
-            "Additional description": config["Additional description"]
+            "Additional description": config["Additional description"],
+            "Video framerate": config["framerate"],
+            "Video resolution": config["resolution"],
+            "Video encoder": config["video encoder"],
+            "Mic sample rate": config["mic sample rate"],
+            "Audio recording settings": config["audio recording settings"]
+            "Video conversion settings": config["video conversion settings"],
+            "Audio conversion settings": config["audio conversion settings"]
         }
     
         metadata_name = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + 'metadata.json')
@@ -121,7 +129,7 @@ if __name__ == "__main__":
         
         #pi cam
         resolution = tuple(config["resolution"]) #max res with high framerate
-        framerate = config["framerate"] # comes out at ~47.9 fps
+        framerate = config["framerate"] 
         
         #create thread-safe queue
         data_queue = queue.Queue()
@@ -182,21 +190,17 @@ if __name__ == "__main__":
         
         h264_video_file = str(video_file)
         wav_file = str(audio_file)
+
+        vid_convert_thread = threading.Thread(target=convert_h264_to_mp4, args=(h264_video_file))
+        aud_convert_thread = threading.Thread(target=convert_wav_to_flac, args=(wav_file))
         
-        convert_h264_to_mp4(h264_video_file)
-        convert_wav_to_flac(wav_file)
-        
-        # Threads for converting / compressing audio & video
-        video_comp_thread = threading.Thread(target=convert_h264_to_mp4, args=(h264_video_file))
-        audio_comp_thread = threading.Thread(target=convert_wav_to_flac, args=(audio_file))
-        
-        video_comp_thread.start()
-        audio_comp_thread.start()
-        
-        time.sleep(Rec_time * 3)
-        
-        video_comp_thread.join()
-        audio_comp_thread.join()
+        vid_convert_thread.start()
+        aud_convert_thread.start()
+
+        time.sleep(60)
+
+        vid_convert_thread.join()
+        aud_convert_thread.join()
         
         print("Compression & conversion complete.")
         
