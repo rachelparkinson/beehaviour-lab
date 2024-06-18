@@ -82,7 +82,7 @@ if __name__ == "__main__":
         metadata = {
             "treatment": config["treatment"],
             "ID": config["ID"],
-            "test compound": "CTL"
+            "test compound": "CTL",
             "concentration": "0",
             "unit": "M",
             "background solution": "sucrose",
@@ -104,12 +104,12 @@ if __name__ == "__main__":
             "Video resolution": config["resolution"],
             "Video encoder": config["video encoder"],
             "Mic sample rate": config["mic sample rate"],
-            "Audio recording settings": config["audio recording settings"]
+            "Audio recording settings": config["audio recording settings"],
             "Video conversion settings": config["video conversion settings"],
             "Audio conversion settings": config["audio conversion settings"]
         }
     
-        metadata_name = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + 'metadata.json')
+        metadata_name = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_metadata.json')
     
         with open(metadata_name, 'w') as file:
             json.dump(metadata, file, indent=4)
@@ -191,16 +191,8 @@ if __name__ == "__main__":
         h264_video_file = str(video_file)
         wav_file = str(audio_file)
 
-        vid_convert_thread = threading.Thread(target=convert_h264_to_mp4, args=(h264_video_file))
-        aud_convert_thread = threading.Thread(target=convert_wav_to_flac, args=(wav_file))
-        
-        vid_convert_thread.start()
-        aud_convert_thread.start()
-
-        time.sleep(60)
-
-        vid_convert_thread.join()
-        aud_convert_thread.join()
+        convert_h264_to_mp4(h264_video_file)
+        convert_wav_to_flac(wav_file)
         
         print("Compression & conversion complete.")
         

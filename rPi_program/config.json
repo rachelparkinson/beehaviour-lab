@@ -2,7 +2,7 @@
 {
     "treatment": "CTL",
     "ID": "CTL1",
-    "test compound": "CTL"
+    "test compound": "CTL",
     "concentration": "0",
     "unit": "M",
     "background solution": "sucrose",
@@ -28,34 +28,10 @@
     "LED_PIN": 25,
     "resolution": [1920, 1080],
     "framerate": 45,
-    "video encoder": "H264Encoder(bitrate=25000000)"
+    "video encoder": "H264Encoder(bitrate=25000000)",
     "mic sample rate": 90,
-
-    "audio recording settings": "arecord,
-        -D, card_device, 
-        -c, 1, 	#mono audio
-        -r, 90000, #sample rate
-        -f, S16_LE,	# Audio format
-        -d, str(Rec_time), #Recording duration in seconds
-        audio_file	#output .wav file",
-
-    "video conversion settings": "ffmpeg,
-        -i, h264_video_file,  # Input file
-        -r, 45, # Framerate
-        -c:v, libx264,  # Video codec
-        -crf, 28,  # CRF value for compression
-        -preset, fast,  # compression-efficiency tradeoff
-        -f, mp4,  # Output file format
-        mp4_file  # Output file",
-
-    "audio conversion settings": "'ffmpeg',
-        -i, wav_file,  # Input file
-        -vn,  # No video
-        -ar, 90000,  # Sample rate
-        -ac, 1,  # Audio channels
-        -compression_level, 12,
-        -c:a, flac,  # Codec audio flac
-        flac_file  # Output file"
-
+    "audio recording settings": "arecord, -D, card_device, -c, 1, -r, 90000, -f, S16_LE, -d, str(Rec_time), audio_file",
+    "video conversion settings": "ffmpeg, -i, h264_video_file, -r, 45, -c:v, libx264, -crf, 28, -preset, fast, -f, mp4, mp4_file",
+    "audio conversion settings": "ffmpeg, -i, wav_file, -vn, -ar, 90000,-ac, 1, -compression_level, 12, -c:a, flac, flac_file"
   }
   
