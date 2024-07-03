@@ -178,11 +178,34 @@ def transfer_files_in_dir(
                 logger.warning(f"Failed to transfer file {source_filepath}")
 
 
-def transfer_directories(
+def transfer_subdirectories(
+    ftp_client: paramiko.SFTPClient, source_dir: Path, destination_dir: Path
+) -> bool:
+    """
+    Transfer subdirectories from the remote server to the local machine.
+
+    Args:
+        ssh_client (paramiko.SSHClient): An SSH client object.
+        source_dir (Path): The path of the source directory on the remote server.
+        destination_dir (Path): The path of the destination directory on the local machine.
+
+    Returns:
+        bool: True if the directories are transferred successfully, False otherwise.
+    """
+    try:
+        dir_list = create_local_folders(ftp_client, source_dir, destination_dir)
+        for dest_subdir in dir_list:
+            transfer_files_in_dir(ftp_client, source_dir, dest_subdir)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to transfer directories: {e}")
+        return False
+
+def transfer_all_directories(
     ssh_client: paramiko.SSHClient, source_dir: Path, destination_dir: Path
 ) -> bool:
     """
-    Transfer directories from the remote server to the local machine.
+    Transfer all directories from the remote server to the local machine.
 
     Args:
         ssh_client (paramiko.SSHClient): An SSH client object.
@@ -194,15 +217,15 @@ def transfer_directories(
     """
     try:
         ftp_client = ssh_client.open_sftp()
+        # Get the list of directories in the source directory
         dir_list = create_local_folders(ftp_client, source_dir, destination_dir)
         for dest_subdir in dir_list:
-            transfer_files_in_dir(ftp_client, source_dir, dest_subdir)
+            transfer_subdirectories(ftp_client, source_dir / dest_subdir, dest_subdir)
         ftp_client.close()
         return True
     except Exception as e:
         logger.error(f"Failed to transfer directories: {e}")
         return False
-
 
 if __name__ == "__main__":
     with open(YAML_FILE) as f:
@@ -213,6 +236,6 @@ if __name__ == "__main__":
     source_dir = Path(
         "/path/to/source/directory"
     )  # Replace with the actual source directory path
-    result = transfer_directories(ssh_client, source_dir, CENTRAL_STORAGE)
+    result = transfer_all_directories(ssh_client, source_dir, CENTRAL_STORAGE)
     ssh_client.close()
     logger.info(f"Transfer result: {result}")
