@@ -5,6 +5,7 @@ from stat import S_ISDIR, S_ISREG
 from typing import Union, List, Optional
 import logging
 import yaml
+import click
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -226,16 +227,19 @@ def transfer_all_directories(
     except Exception as e:
         logger.error(f"Failed to transfer directories: {e}")
         return False
-
-if __name__ == "__main__":
+    
+@click.command()
+@click.option('--user', required=True, help='User to use for SSH connection.')
+@click.option('--central-storage', required=True, type=Path, help='CENTRAL_STORAGE location.')
+def main(user, central_storage):
     with open(YAML_FILE) as f:
         rpis = yaml.safe_load(f)
-    user = "rPi2"
     ip = rpis[user]
     ssh_client = get_ssh_client(user, ip)
-    source_dir = Path(
-        "/path/to/source/directory"
-    )  # Replace with the actual source directory path
-    result = transfer_all_directories(ssh_client, source_dir, CENTRAL_STORAGE)
+    source_dir = Path("/path/to/source/directory")  # Replace with the actual source directory path
+    result = transfer_all_directories(ssh_client, source_dir, central_storage)
     ssh_client.close()
     logger.info(f"Transfer result: {result}")
+
+if __name__ == "__main__":
+    main()
