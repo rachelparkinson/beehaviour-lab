@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -260,24 +261,51 @@ def transfer_all_directories(
 
 @click.command()
 @click.option("--user", required=True, help="User to use for SSH connection.")
+@click.option('--user-range', default=None, help='Range of users to use for SSH connection, e.g., "rPi1-rPi10".')
 @click.option(
     "--central-storage", required=True, type=Path, help="CENTRAL_STORAGE location."
 )
-def main(user, central_storage):
-    logger.info(f"User: {user}")
+def main(user, user_range, central_storage):
+    users = []
+    if user:
+        users.append(user)
+    if user_range:
+        match = re.match(r"([a-zA-Z]+)(\d+)-([a-zA-Z]+)(\d+)", user_range)
+        if match:
+            prefix_start, start_num, prefix_end, end_num = match.groups()
+            if prefix_start == prefix_end:
+                users.extend([f"{prefix_start}{i}" for i in range(int(start_num), int(end_num) + 1)])
+            else:
+                logger.error("User range prefix mismatch.")
+                return
+        else:
+            logger.error("Invalid user range format. Please use the format 'prefixStartNum-prefixEndNum'.")
+            return
+
+    if not users:
+        logger.error("No users specified. Please specify at least one user or a user range.")
+        return
+    
+    logger.info(f"Files requested from the following rPis: {users}")
+
     with open(YAML_FILE) as f:
         rpis = yaml.safe_load(f)
-    ip = rpis[user]
-    ssh_client = get_ssh_client(user, ip)
-    source_dir = Path(
-        f"/home/{user}/myssd/"
-    ).as_posix()  # Source directory on the remote server
-    # Create the destination directory on the local machine in a user subfolder
-    destination_dir = Path(central_storage, user)
-    logger.info(f"Running script with Source dir: {source_dir}, Destination dir: {destination_dir}")
-    result = transfer_all_directories(ssh_client, source_dir, destination_dir)
-    ssh_client.close()
-    logger.info(f"Transfer result: {result}")
+
+    for user in users:
+        if user not in rpis:
+            logger.error(f"User {user} not found in the YAML file.")
+            continue
+        ip = rpis[user]
+        ssh_client = get_ssh_client(user, ip)
+        source_dir = Path(
+            f"/home/{user}/myssd/"
+        ).as_posix()  # Source directory on the remote server
+        # Create the destination directory on the local machine in a user subfolder
+        destination_dir = Path(central_storage, user)
+        logger.info(f"Running script with Source dir: {source_dir}, Destination dir: {destination_dir}")
+        result = transfer_all_directories(ssh_client, source_dir, destination_dir)
+        ssh_client.close()
+        logger.info(f"Transfer result for {user}: {result}")
 
 
 if __name__ == "__main__":
