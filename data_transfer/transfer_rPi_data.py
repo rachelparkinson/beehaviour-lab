@@ -1,19 +1,30 @@
-import paramiko
 import hashlib
+import logging
+import sys
+from datetime import date
 from pathlib import Path
 from stat import S_ISDIR, S_ISREG
-from typing import Union, List, Optional
-import logging
-import yaml
-import click
+from typing import List, Union
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import click
+import paramiko
+import yaml
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 YAML_FILE = SCRIPT_DIR / "rPis.yaml"
-CENTRAL_STORAGE = Path(r"/path/to/destination/directory")
+
+# Set up logging
+file_handler = logging.FileHandler(
+    filename=f"{date.today()}_transfer_rPi_data.log", level=logging.DEBUG
+)
+stdout_handler = logging.StreamHandler(stream=sys.stdout, level=logging.INFO)
+handlers = [file_handler, stdout_handler]
+LOGGING_FMT = "%(asctime)s - %(levelname)s - %(message)s"
+LOGGING_DATE_FMT = "%d-%b-%y %H:%M:%S"
+logging.basicConfig(
+    level=logging.DEBUG, format=LOGGING_FMT, datefmt=LOGGING_DATE_FMT, handlers=handlers
+)
+logger = logging.getLogger(__name__)
 
 
 def get_ssh_client(user: str, ip: str) -> Union[paramiko.SSHClient, bool]:
@@ -145,10 +156,12 @@ def create_local_folders(
         List[Path]: A list of created local directories.
     """
     dir_list = []
-    for entry in ftp_client.listdir_attr(source_dir.as_posix()):
+    source_dir = Path(source_dir).as_posix()
+    for entry in ftp_client.listdir_attr(source_dir):
         mode = entry.st_mode
         if S_ISDIR(mode):
             new_dir = Path(destination_dir, entry.filename)
+            logger.info(f"Creating directory at {new_dir}")
             new_dir.mkdir(exist_ok=True)
             dir_list.append(new_dir)
     return dir_list
@@ -165,8 +178,9 @@ def transfer_files_in_dir(
         source_dir (Path): The path of the source directory on the remote server.
         dest_dir (Path): The path of the destination directory on the local machine.
     """
-    source_subdir = Path(source_dir, dest_dir.name)
-    for entry in ftp_client.listdir_attr(source_subdir.as_posix()):
+    source_subdir = Path(source_dir, dest_dir.name).as_posix()
+    logging.debug(f"transfer_files_in_dir - Source subdir: {source_subdir}")
+    for entry in ftp_client.listdir_attr(source_subdir):
         mode = entry.st_mode
         if S_ISREG(mode):
             source_filepath = Path(source_subdir, entry.filename).as_posix()
@@ -193,6 +207,9 @@ def transfer_subdirectories(
     Returns:
         bool: True if the directories are transferred successfully, False otherwise.
     """
+    logger.info(
+        f"Transferring subdirectories. Source: {source_dir}, Dest: {destination_dir}"
+    )
     try:
         dir_list = create_local_folders(ftp_client, source_dir, destination_dir)
         for dest_subdir in dir_list:
@@ -201,6 +218,7 @@ def transfer_subdirectories(
     except Exception as e:
         logger.error(f"Failed to transfer directories: {e}")
         return False
+
 
 def transfer_all_directories(
     ssh_client: paramiko.SSHClient, source_dir: Path, destination_dir: Path
@@ -216,30 +234,45 @@ def transfer_all_directories(
     Returns:
         bool: True if the directories are transferred successfully, False otherwise.
     """
+    logger.info(
+        f"Transferring all directories. Source: {source_dir}, Dest: {destination_dir}"
+    )
     try:
         ftp_client = ssh_client.open_sftp()
         # Get the list of directories in the source directory
         dir_list = create_local_folders(ftp_client, source_dir, destination_dir)
         for dest_subdir in dir_list:
-            transfer_subdirectories(ftp_client, source_dir / dest_subdir, dest_subdir)
+            source_subdir = Path(source_dir, dest_subdir.name).as_posix()
+            logger.info(
+                f"Transfer all directories: Source subdir: {source_subdir}, dest subdir {dest_subdir}"
+            )
+            transfer_subdirectories(ftp_client, source_subdir, dest_subdir)
         ftp_client.close()
         return True
     except Exception as e:
         logger.error(f"Failed to transfer directories: {e}")
         return False
-    
+
+
 @click.command()
-@click.option('--user', required=True, help='User to use for SSH connection.')
-@click.option('--central-storage', required=True, type=Path, help='CENTRAL_STORAGE location.')
+@click.option("--user", required=True, help="User to use for SSH connection.")
+@click.option(
+    "--central-storage", required=True, type=Path, help="CENTRAL_STORAGE location."
+)
 def main(user, central_storage):
+    logger.info(f"User: {user}")
     with open(YAML_FILE) as f:
         rpis = yaml.safe_load(f)
     ip = rpis[user]
     ssh_client = get_ssh_client(user, ip)
-    source_dir = Path("/path/to/source/directory")  # Replace with the actual source directory path
+    source_dir = Path(
+        f"/home/{user}/myssd/"
+    ).as_posix()  # Source directory on the remote server
+    logger.info(f"Source dir: {source_dir}, Central Storage: {central_storage}")
     result = transfer_all_directories(ssh_client, source_dir, central_storage)
     ssh_client.close()
     logger.info(f"Transfer result: {result}")
+
 
 if __name__ == "__main__":
     main()
