@@ -162,7 +162,7 @@ def create_local_folders(
         if S_ISDIR(mode):
             new_dir = Path(destination_dir, entry.filename)
             logger.info(f"Creating directory at {new_dir}")
-            new_dir.mkdir(exist_ok=True)
+            new_dir.mkdir(parents=True, exist_ok=True)
             dir_list.append(new_dir)
     return dir_list
 
@@ -185,6 +185,10 @@ def transfer_files_in_dir(
         if S_ISREG(mode):
             source_filepath = Path(source_subdir, entry.filename).as_posix()
             destination_filepath = Path(dest_dir, entry.filename)
+            # Check if the file already exists locally and skip if it does
+            if destination_filepath.exists():
+                logger.info(f"File already exists locally: {destination_filepath}")
+                continue
             logger.info(f"Transferring {source_filepath} to {destination_filepath}")
             transferred = transfer_file(
                 ftp_client, source_filepath, destination_filepath
@@ -268,8 +272,10 @@ def main(user, central_storage):
     source_dir = Path(
         f"/home/{user}/myssd/"
     ).as_posix()  # Source directory on the remote server
-    logger.info(f"Source dir: {source_dir}, Central Storage: {central_storage}")
-    result = transfer_all_directories(ssh_client, source_dir, central_storage)
+    # Create the destination directory on the local machine in a user subfolder
+    destination_dir = Path(central_storage, user)
+    logger.info(f"Running script with Source dir: {source_dir}, Destination dir: {destination_dir}")
+    result = transfer_all_directories(ssh_client, source_dir, destination_dir)
     ssh_client.close()
     logger.info(f"Transfer result: {result}")
 
