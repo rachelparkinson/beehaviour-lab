@@ -260,7 +260,7 @@ def transfer_all_directories(
 
 
 @click.command()
-@click.option("--user", required=True, help="User to use for SSH connection.")
+@click.option("--user", default=None, help="User to use for SSH connection.")
 @click.option('--user-range', default=None, help='Range of users to use for SSH connection, e.g., "rPi1-rPi10".')
 @click.option(
     "--central-storage", required=True, type=Path, help="CENTRAL_STORAGE location."
