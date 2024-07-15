@@ -97,3 +97,5 @@ def convert_h264_to_mp4(h264_video_file):
         
     except subprocess.CalledProcessError as e:
         print(f"Failed to convert {h264_video_file} to {mp4_file}: {e}")
+
+    # ffmpeg -r 30 -i img%d.jpg -vcodec huffyuv output.avi
