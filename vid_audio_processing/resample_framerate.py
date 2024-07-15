@@ -8,7 +8,8 @@ from functions.video_speed import adjust_video_speed, change_video_fps
 # Define the base path to the directory containing the subfolders
 
 # Base directory containing many folders
-main_directory = 'R:/Bee audio and video recordings/MC_data_Ellie'
+#main_directory = 'R:/Bee audio and video recordings/MC_data_Ellie'
+main_directory = 'E:/Group_data'
 
 # List all folders in the main directory
 folders = [f for f in os.listdir(main_directory) if os.path.isdir(os.path.join(main_directory, f))]
@@ -26,7 +27,7 @@ for folder in folders:
 
         # Find files in the current subfolder
         video_path = next(glob.iglob(f'{subfolder_path}/*[!_adj].mp4'), None)
-        video_metadata = next(glob.iglob(f'{subfolder_path}/*video_metadata.json'), None)
+        video_metadata = next(glob.iglob(f'{subfolder_path}/*videoframes_.json'), None)
 
         # Check if the essential files are found
         if not all([video_path, video_metadata]):

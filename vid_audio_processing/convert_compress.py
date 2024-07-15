@@ -5,7 +5,8 @@ from functions.convert_vid import convert_h264_to_mp4
 # Define the base path to the directory containing the subfolders
 
 # Base directory containing many folders
-main_directory = 'R:/Bee audio and video recordings/MC_data_Ellie'
+#main_directory = 'R:/Bee audio and video recordings/MC_data_Ellie'
+main_directory = 'E:/Group_data'
 
 # List all folders in the main directory
 folders = [f for f in os.listdir(main_directory) if os.path.isdir(os.path.join(main_directory, f))]
