@@ -16,9 +16,11 @@ YAML_FILE = SCRIPT_DIR / "rPis.yaml"
 
 # Set up logging
 file_handler = logging.FileHandler(
-    filename=f"{date.today()}_transfer_rPi_data.log", level=logging.DEBUG
+    filename=f"{date.today()}_transfer_rPi_data.log"
 )
-stdout_handler = logging.StreamHandler(stream=sys.stdout, level=logging.INFO)
+file_handler.setLevel(logging.DEBUG)
+stdout_handler = logging.StreamHandler(stream=sys.stdout)
+stdout_handler.setLevel(logging.INFO)
 handlers = [file_handler, stdout_handler]
 LOGGING_FMT = "%(asctime)s - %(levelname)s - %(message)s"
 LOGGING_DATE_FMT = "%d-%b-%y %H:%M:%S"
