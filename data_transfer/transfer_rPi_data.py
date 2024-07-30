@@ -80,7 +80,9 @@ def get_source_dir_from_config(ssh_client ,json_file: Path) -> Path:
     Returns: path of the data source directory
     """
     ftp_client = get_ftp_client(ssh_client)
-    with ftp_client.file(json_file.as_posix(), "r") as f:
+    json_file = json_file.as_posix()
+    logger.info(f"Getting source directory from {json_file}")
+    with ftp_client.file(json_file, "r") as f:
         data = json.load(f)
     source_dir = Path(data["ssd_path"])
     ftp_client.close()
@@ -342,7 +344,7 @@ def main(user, user_range, central_storage):
             logger.error(f"Failed to connect to {ip}. Skipping user {user}.")
             continue
         try:
-            config_path = Path(f"/home/{user}/REMOTE_CONFIG")
+            config_path = Path(f"/home/{user}/{REMOTE_CONFIG}")
             source_dir = get_source_dir_from_config(ssh_client, config_path) # Source directory on the remote server
         except Exception as e:
             logger.error(f"Failed to get source directory for {user}: {e}")
