@@ -8,7 +8,10 @@ from stat import S_ISDIR, S_ISREG
 from typing import List, Union
 
 import click
-import paramiko
+import warnings
+from cryptography.utils import CryptographyDeprecationWarning
+with warnings.catch_warnings(action="ignore", category=CryptographyDeprecationWarning):
+    import paramiko
 import yaml
 
 SCRIPT_DIR = Path(__file__).resolve().parent
