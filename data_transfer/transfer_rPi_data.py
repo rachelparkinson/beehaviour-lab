@@ -342,7 +342,8 @@ def main(user, user_range, central_storage):
             logger.error(f"Failed to connect to {ip}. Skipping user {user}.")
             continue
         try:
-            source_dir = get_source_dir_from_config(ssh_client, REMOTE_CONFIG) # Source directory on the remote server
+            config_path = Path(f"/home/{user}/REMOTE_CONFIG")
+            source_dir = get_source_dir_from_config(ssh_client, config_path) # Source directory on the remote server
         except Exception as e:
             logger.error(f"Failed to get source directory for {user}: {e}")
             ssh_client.close()
