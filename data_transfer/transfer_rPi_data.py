@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import re
 import sys
@@ -16,6 +17,7 @@ import yaml
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 YAML_FILE = SCRIPT_DIR / "rPis.yaml"
+REMOTE_CONFIG = "config.json"
 
 # Set up logging
 file_handler = logging.FileHandler(
@@ -31,6 +33,7 @@ logging.basicConfig(
     level=logging.DEBUG, format=LOGGING_FMT, datefmt=LOGGING_DATE_FMT, handlers=handlers
 )
 logger = logging.getLogger(__name__)
+
 
 
 def get_ssh_client(user: str, ip: str) -> Union[paramiko.SSHClient, bool]:
@@ -52,6 +55,36 @@ def get_ssh_client(user: str, ip: str) -> Union[paramiko.SSHClient, bool]:
     except Exception as e:
         logger.error(f"Failed to connect to {ip}: {e}")
         return False
+
+def get_ftp_client(ssh_client: paramiko.SSHClient) -> paramiko.SFTPClient:
+    """
+    Get an SFTP client object for the given SSH client.
+
+    Args:
+        ssh_client (paramiko.SSHClient): An SSH client object.
+
+    Returns:
+        paramiko.SFTPClient: An SFTP client object.
+    """
+    ftp_client = ssh_client.open_sftp()
+    return ftp_client
+
+
+def get_source_dir_from_config(ssh_client ,json_file: Path) -> Path:
+    """
+    Get the source directory from the JSON file.
+
+    Args:
+        json_file (Path): The path of the JSON file.
+
+    Returns: path of the data source directory
+    """
+    ftp_client = get_ftp_client(ssh_client)
+    with ftp_client.file(json_file.as_posix(), "r") as f:
+        data = json.load(f)
+    source_dir = Path(data["ssd_path"])
+    ftp_client.close()
+    return source_dir
 
 
 def check_accessibility(user: str, ip: str) -> bool:
@@ -230,6 +263,8 @@ def transfer_subdirectories(
         return False
 
 
+
+
 def transfer_all_directories(
     ssh_client: paramiko.SSHClient, source_dir: Path, destination_dir: Path
 ) -> bool:
@@ -248,7 +283,7 @@ def transfer_all_directories(
         f"Transferring all directories. Source: {source_dir}, Dest: {destination_dir}"
     )
     try:
-        ftp_client = ssh_client.open_sftp()
+        ftp_client = get_ftp_client(ssh_client)
         # Get the list of directories in the source directory
         dir_list = create_local_folders(ftp_client, source_dir, destination_dir)
         for dest_subdir in dir_list:
@@ -262,6 +297,7 @@ def transfer_all_directories(
     except Exception as e:
         logger.error(f"Failed to transfer directories: {e}")
         return False
+
 
 
 @click.command()
@@ -305,9 +341,12 @@ def main(user, user_range, central_storage):
         if not ssh_client:
             logger.error(f"Failed to connect to {ip}. Skipping user {user}.")
             continue
-        source_dir = Path(
-            f"/home/{user}/myssd/"
-        ).as_posix()  # Source directory on the remote server
+        try:
+            source_dir = get_source_dir_from_config(ssh_client, REMOTE_CONFIG) # Source directory on the remote server
+        except Exception as e:
+            logger.error(f"Failed to get source directory for {user}: {e}")
+            ssh_client.close()
+            continue
         # Create the destination directory on the local machine in a user subfolder
         destination_dir = Path(central_storage, user)
         logger.info(f"Running script with Source dir: {source_dir}, Destination dir: {destination_dir}")
