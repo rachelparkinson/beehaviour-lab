@@ -299,6 +299,9 @@ def main(user, user_range, central_storage):
             continue
         ip = rpis[user]
         ssh_client = get_ssh_client(user, ip)
+        if not ssh_client:
+            logger.error(f"Failed to connect to {ip}. Skipping user {user}.")
+            continue
         source_dir = Path(
             f"/home/{user}/myssd/"
         ).as_posix()  # Source directory on the remote server
