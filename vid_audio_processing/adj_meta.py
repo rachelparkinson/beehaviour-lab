@@ -6,7 +6,7 @@ import json
 
 # Base directory containing many folders
 #main_directory = 'R:/RFS/Bee audio and video recordings/MC_data_Ellie'
-main_directory = '/Volumes/RFS/Bee audio and video recordings/MC_data_Ellie/Day_29'
+main_directory = '/Volumes/RFS/Bee audio and video recordings/Kieran_data/Video_adjusted'
 
 # List all folders in the main directory
 folders = [f for f in os.listdir(main_directory) if os.path.isdir(os.path.join(main_directory, f))]
@@ -42,11 +42,11 @@ for folder in folders:
             #else:
             #    data["background solution conc (M)"] = 2  # Add if it doesn't exist
             
-            data["Day"] = 28  # Add a new entry "Day" with value 0
+            data["Day"] = 1  # Add a new entry "Day"
             data["background solution"] = "sucrose"
-            data["background solution conc (M)"] = "2"
-            data["pollen Y/N"] = "Y"
-            data["group size"] = 5
+            data["background solution conc (M)"] = "1"
+            data["pollen Y/N"] = "N"
+            data["group size"] = 1
 
             # Write the modified JSON back to the file
             with open(metadata_file, 'w') as file:
