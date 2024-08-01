@@ -3,7 +3,7 @@ import json
 import logging
 import re
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from stat import S_ISDIR, S_ISREG
 from typing import List, Union
@@ -334,7 +334,12 @@ def main(user, user_range, central_storage):
     with open(YAML_FILE) as f:
         rpis = yaml.safe_load(f)
 
+    # Record the overall start time
+    start_time = datetime.now()
+
     for user in users:
+        # Record the start time for user
+        user_start_time = datetime.now()
         if user not in rpis:
             logger.error(f"User {user} not found in the YAML file.")
             continue
@@ -356,6 +361,15 @@ def main(user, user_range, central_storage):
         result = transfer_all_directories(ssh_client, source_dir, destination_dir)
         ssh_client.close()
         logger.info(f"Transfer result for {user}: {result}")
+        # Record the end time for user
+        user_end_time = datetime.now()
+        user_duration = user_end_time - user_start_time
+        logger.info(f"Duration for {user}: {user_duration}")
+    
+    # Record the overall end time
+    end_time = datetime.now()
+    duration = end_time - start_time
+    logger.info(f"Overall duration: {duration}")
 
 
 if __name__ == "__main__":
