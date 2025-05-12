@@ -15,7 +15,7 @@ Run program from "main.py" file.
 
 Use a setup rPi to download all requirements, and then transfer to the other rPis using VNC. 
 
-# 1. on the Internet-connected rPi:
+## 1. on the Internet-connected rPi:
 
 ```
 #!/bin/bash
@@ -52,7 +52,7 @@ cd ../..
 tar -czvf rpi_packages.tar.gz rpi_packages/
 ```
 
-# 2. on the other rPis:
+## 2. on the other rPis:
 
 ```
 #!/bin/bash
@@ -72,14 +72,14 @@ cd ../pip
 pip3 install --no-index --find-links . *.whl
 ```
 
-#3. enable I2C on each rPi for the OLED display
+## 3. enable I2C on each rPi for the OLED display
 
 ```
 sudo raspi-config
 # Navigate to Interfacing Options > I2C > Enable
 ```
 
-#4. For audio recording, set the USB mic as the default audio input
+## 4. For audio recording, set the USB mic as the default audio input
 
 ```
 sudo nano /etc/asound.conf
