@@ -14,9 +14,9 @@
     "Additional description": "None",
     
     "day": "240319",
-    "Rec_time": 300,
-    "reps": 48,
-    "spaces": 1500,
+    "Rec_time": 60, 
+    "reps": 192, 
+    "spaces": 840,
 
     "Name": "rPi1",
     "rPi_num": 1,
@@ -27,11 +27,11 @@
     "BUZZER_PIN": 24,
     "LED_PIN": 25,
     "resolution": [1920, 1080],
-    "framerate": 45,
+    "framerate": 30,
     "video encoder": "H264Encoder(bitrate=25000000)",
     "mic sample rate": 90,
     "audio recording settings": "arecord, -D, card_device, -c, 1, -r, 90000, -f, S16_LE, -d, str(Rec_time), audio_file",
-    "video conversion settings": "ffmpeg, -i, h264_video_file, -r, 45, -c:v, libx264, -crf, 28, -preset, fast, -f, mp4, mp4_file",
+    "video conversion settings": "ffmpeg, -i, h264_video_file, -r, 30, -c:v, libx264, -crf, 28, -preset, fast, -f, mp4, mp4_file",
     "audio conversion settings": "ffmpeg, -i, wav_file, -vn, -ar, 90000,-ac, 1, -compression_level, 12, -c:a, flac, flac_file"
   }
   
