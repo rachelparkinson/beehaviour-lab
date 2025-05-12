@@ -17,6 +17,7 @@ from threads.OLED_display import OLED_wipe
 from threads.pi_cam import record_video, convert_h264_to_mp4
 from threads.USB_mic import find_usb_mic, record_audio, convert_wav_to_flac
 #from threads.time_clapper import time_clapper
+from threads.video_inference import run_tflite_inference
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
@@ -195,6 +196,15 @@ if __name__ == "__main__":
         convert_wav_to_flac(wav_file)
         
         print("Compression & conversion complete.")
+
+        # Add YOLO inference after video conversion
+        mp4_video_file = h264_video_file.replace('.h264', '.mp4')
+        yolo_thread = threading.Thread(target=run_yolo_inference, 
+                                    args=(mp4_video_file, day_folder, day, Name, replicate, ID))
+        yolo_thread.start()
+        yolo_thread.join()  # Wait for YOLO inference to complete
+
+        print("YOLO inference complete.")
         
         time2 = time.time()
         runover_time = time2-time1

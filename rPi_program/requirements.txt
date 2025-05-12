@@ -5,4 +5,5 @@ adafruit-circuitpython-ssd1306>=2.12.4
 RPi.GPIO>=0.7.0
 board>=1.0
 busio>=1.0
-adafruit-blinka>=8.0.0 
+adafruit-blinka>=8.0.0
+numpy>=1.21.0
