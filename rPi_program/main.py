@@ -13,10 +13,10 @@ from load_config import load_config
 
 from threads.LED_panels import lights
 from threads.OLED_display import OLED_wipe
-from threads.temp_rh import DHT
+#from threads.temp_rh import DHT
 from threads.pi_cam import record_video, convert_h264_to_mp4
 from threads.USB_mic import find_usb_mic, record_audio, convert_wav_to_flac
-from threads.time_clapper import time_clapper
+#from threads.time_clapper import time_clapper
 
 # main file for the rPi beehaviour box. 
 # Setup duration of recordings directly from this file.
@@ -142,8 +142,8 @@ if __name__ == "__main__":
         OLED_wipe(Name, data_queue, i2c)
         
         # Filenames (as per day_folder)
-        buzz_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_buzz.json')
-        DHT_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_DHT.json')
+        #buzz_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_buzz.json')
+        #DHT_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_DHT.json')
         audio_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_audio.wav')
         video_file = os.path.join(day_folder, day + '_' + Name + '_' + str(replicate) + '_' + ID + '_video.h264')
 
@@ -152,17 +152,17 @@ if __name__ == "__main__":
         
         #Create threads for each task, pass relevant parameters
         lights_thread = threading.Thread(target=lights, args=(R_LED_PIN, W_LED_PIN, Rec_time))
-        DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, start_time, seg_time, Rec_time))
+        #DHT_thread = threading.Thread(target=DHT, args=(DHT_file, data_queue, start_time, seg_time, Rec_time))
         USB_mic_thread = threading.Thread(target=record_audio, args=(Rec_time, audio_file, card, device))
         cam_thread = threading.Thread(target=record_video, args=(picam2, framerate, resolution, video_file, Rec_time))
-        time_clapper_thread = threading.Thread(target=time_clapper, args=(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file))
+        #time_clapper_thread = threading.Thread(target=time_clapper, args=(rPi_num, BUZZER_PIN, LED_PIN, Rec_time, buzz_file))
         
         #Start threads
         lights_thread.start()
-        DHT_thread.start()
+        #DHT_thread.start()
         cam_thread.start()
         USB_mic_thread.start()
-        time_clapper_thread.start()
+        #time_clapper_thread.start()
         
         # Wait for Rec_time
         time.sleep(Rec_time)
@@ -175,10 +175,10 @@ if __name__ == "__main__":
         
         #Wait for all threads to complete
         lights_thread.join()
-        DHT_thread.join()
+        #DHT_thread.join()
         cam_thread.join()
         USB_mic_thread.join()
-        time_clapper_thread.join()
+        #time_clapper_thread.join()
 
         #Check to be sure camera is closed
         picam2.close()

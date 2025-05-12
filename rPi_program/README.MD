@@ -20,7 +20,7 @@ Use a setup rPi to download all requirements, and then transfer to the other rPi
 ```
 #!/bin/bash
 
-# Create directories for packages
+# Create directories
 mkdir -p rpi_packages/apt
 mkdir -p rpi_packages/pip
 
@@ -30,14 +30,22 @@ apt-get download \
     python3-opencv \
     opencv-data \
     ffmpeg \
-    $(apt-cache depends python3-opencv opencv-data ffmpeg | grep -E 'Depends|Recommends|Suggests' | cut -d: -f2 | tr -d '<>' | sed '/^$/d')
+    i2c-tools \
+    python3-smbus \
+    alsa-utils \
+    $(apt-cache depends python3-opencv opencv-data ffmpeg i2c-tools python3-smbus alsa-utils | grep -E 'Depends|Recommends|Suggests' | cut -d: -f2 | tr -d '<>' | sed '/^$/d')
 
-# Download pip packages (will automatically get ARM-compatible versions from piwheels)
+# Download pip packages
 cd ../pip
 pip3 download \
     opencv-python \
     picamera2 \
-    tflite-runtime
+    tflite-runtime \
+    adafruit-circuitpython-ssd1306 \
+    RPi.GPIO \
+    board \
+    busio \
+    adafruit-blinka
 
 # Create tar archive
 cd ../..
@@ -62,5 +70,23 @@ sudo apt --fix-broken install
 # Install pip packages
 cd ../pip
 pip3 install --no-index --find-links . *.whl
+```
+
+#3. enable I2C on each rPi for the OLED display
+
+```
+sudo raspi-config
+# Navigate to Interfacing Options > I2C > Enable
+```
+
+#4. For audio recording, set the USB mic as the default audio input
+
+```
+sudo nano /etc/asound.conf
+# Add the following lines to the file:
+   pcm.!default {
+       type plug
+       slave.pcm "plughw:1,0"  # Adjust card,device numbers as needed
+   }
 ```
 
