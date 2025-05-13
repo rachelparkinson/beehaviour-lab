@@ -89,6 +89,28 @@ EOF
 
 sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf
 
+# ---- DETECT USB MICROPHONE ----
+USERNAME=$(whoami)
+MIC_FILE="/home/$USERNAME/mic.txt"
+
+echo "Detecting USB microphone..."
+
+# Run arecord and filter USB devices
+MIC_LINE=$(arecord -l | grep -i "usb")
+
+if [ -z "$MIC_LINE" ]; then
+    echo "No USB microphone found." | tee "$MIC_FILE"
+else
+    CARD=$(echo "$MIC_LINE" | sed -n 's/^.*card \([0-9]\+\):.*device \([0-9]\+\):.*/\1/p')
+    DEVICE=$(echo "$MIC_LINE" | sed -n 's/^.*device \([0-9]\+\):.*/\1/p')
+
+    echo "USB microphone detected:"
+    echo "Card: $CARD, Device: $DEVICE"
+    echo "card=$CARD" > "$MIC_FILE"
+    echo "device=$DEVICE" >> "$MIC_FILE"
+    echo "Saved to $MIC_FILE"
+fi
+
 
 # ---- FINAL REBOOT PROMPT ----
 echo "All setup steps complete. RealVNC will start on boot using system login."

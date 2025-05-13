@@ -1,79 +1,82 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+## NEW VERSION - rPi SETUP for BEEhaviour Lab ##
 
-\f0\fs24 \cf0 ## NEW VERSION - rPi SETUP for BEEhaviour Lab ##\
-\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+## ---------------------- ##
 
-\f1\b \cf0 Start with:\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+Start with:
+- SD card (using 128 GB)
+- Raspberry Pi 4B (4 GB)
+- USB-SATA cable
+- PiCam (using NoIR V2)
+- SSD (Gigastone Game Pro SSD 512 GB)
 
-\f0\b0 \cf0 - SD card (using 128 GB)\
-- raspberry pi 4B (4 GB)\
-- USB-SATA cable\
-- picam (using NoIR V2)\
-- SSD (Gigastone Game Pro SSD 512 GB)\
-\
-\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+## ---------------------- ##
 
-\f1\b \cf0 1. Flash card 
-\f0\b0 \
-- Download / open Raspberry Pi Imager (at least v1.7)\
-- select raspbian version - 
-\f1\b Old setup uses DEBIAN-BULLSEYE (newest release isn\'92t working with VNC as of 14/10/2023) 
-\f0\b0 - New setup uses DEBIAN-BOOKWORM 12\
-- select SD card from storage option\
-- select \'93settings\'94 and - \
-Enable SSH; Set username and password (username e.g., rPi1, password pipass)\
-\
+1. Flash card
+- Download / open Raspberry Pi Imager (at least v1.7)
+- Select Raspbian version:
+  - Old setup uses DEBIAN-BULLSEYE (newest release isn't working with VNC as of 14/10/2023)
+  - New setup uses DEBIAN-BOOKWORM 12
+- Select SD card from storage option
+- Click “Settings” and enable:
+  - Enable SSH
+  - Set username and password (e.g., username: rPi1, password: pipass)
 
-\f1\b 2. Connect to monitor, mouse, keyboard\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+## ---------------------- ##
 
-\f0\b0 \cf0 - Make sure pi is powered off before putting SD card in rPi\
-- insert SD, plug it in.\
-\
+2. Connect to monitor, mouse, keyboard
+- Make sure Pi is powered off before inserting SD card
+- Insert SD, plug it in
 
-\f1\b 4. rPi configuration\
-\
-# Download setup file from GitHub:\
+## ---------------------- ##
 
-\f0\b0 wget https://github.com/rachelparkinson/beehaviour-lab/refs/heads/main/rPi_program/setup_rpi.sh\
-\
-# Install it:\
-\
-+chmod +x setup_rpi.sh\
-./setup_rpi.sh\
-\
+4. rPi configuration
 
-\f1\b 5. Log in to RealVNC to allow for file transfer\
+# Download setup file from GitHub:
+wget https://github.com/rachelparkinson/beehaviour-lab/archive/refs/heads/main.zip
 
-\f0\b0 sudo vnclicensewiz \
-\
+# Unzip and run:
+unzip main.zip
+cd beehaviour-lab-main/rPi_program
+chmod +x setup_rpi.sh
+./setup_rpi.sh
 
-\f1\b 5. Check microphone\
+## ---------------------- ##
 
-\f0\b0 arecord -l\
-\
-rPi21: card 3, device 0\
-\
+5. Log in to RealVNC to allow for file transfer
+sudo vnclicensewiz
 
-\f1\b 6. Create file to save this information\
-** put on GitHub the empty version to download and fill in **
-\f0\b0 \
-\
- \
-\
- 
-\f1\b  \
+## ---------------------- ##
 
-\f0\b0 \
-\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 \
-}
+6. Transfer git program (from local copy via ssh)
+
+# Fix rPi name (e.g., rPi1...) and replace <raspberry_pi_ip> with actual IP. 
+# Need to be on same wifi network as rPi for this to work
+
+scp -r /Users/user/Documents/beehaviour-lab/rPi_program rPi21@<raspberry_pi_ip>:/home/rPi21/
+
+
+## ----------------------- ## 
+
+8. Setup SSD
+
+Connect SSD
+- Connect to USB 3.0 (blue)
+- wait 30s, then in Gparted select ‘GParted > Refresh Devices’ (1-2 mins)
+- Select SSD (from drop-down menu at top right) and wait for the information to display
+
+Create Partition Table
+- Select ‘Device > Create Partition Table’ from top menu
+- Keep default settings, select ‘Apply’ (wait a few mins, might not look like anything’s happening)
+
+Create Partition
+- select ‘Partiton > New’ from top menu
+- Keep all default settings (including the ext4 filesystem), but add a sensible Label to help identify it later on (e.g., ‘WDSSD’)
+- Select ‘Edit > Apply All Operations’ from the top menu and click yes to the warning once you’ve checked everything (may take some time)
+
+Run ssd_setup.py
+
+cd ~/rPi_program
+chmod +x ssd_setup.sh    # (only needed once to make it executable)
+./ssd_setup.sh
+
+
