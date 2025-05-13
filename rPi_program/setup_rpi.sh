@@ -66,6 +66,30 @@ sudo sed -i 's/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/' /boot/config.txt
 echo "Disabling onboard audio to prioritize USB microphone..."
 sudo sed -i 's/^dtparam=audio=on/dtparam=audio=off/' /boot/config.txt
 
+# ---- WIFI SETUP ----
+echo "Setting up Wi-Fi networks with priorities..."
+
+sudo tee /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null <<EOF
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=GB
+
+network={
+    ssid="Rachel's iPhone (6)"
+    psk="Hello239"
+    priority=1
+}
+
+network={
+    ssid="ETHOSCOPE_WIFI"
+    psk="ETHOSCOPE_1234"
+    priority=2
+}
+EOF
+
+sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf
+
+
 # ---- FINAL REBOOT PROMPT ----
-echo "✅ All setup steps complete. RealVNC will start on boot using system login."
+echo "All setup steps complete. RealVNC will start on boot using system login."
 read -p "Reboot now? [y/N]: " confirm && [[ $confirm == [yY] ]] && sudo reboot
