@@ -10,6 +10,15 @@ class BeeDetector:
         self.net = ncnn.Net()
         self.net.load_param(param_path)
         self.net.load_model(bin_path)
+        
+        # Print model info to find layer names
+        print("Model input names:", self.net.input_names())
+        print("Model output names:", self.net.output_names())
+        
+        # Store the actual input/output names
+        self.input_name = self.net.input_names()[0]  # Usually 'in0'
+        self.output_name = self.net.output_names()[0]  # Usually 'out0'
+        
         self.conf_thresh = conf_thresh
         self.class_names = ['bee', 'feeder']
         self.colors = [(0, 255, 0), (0, 0, 255)]  # Green for bees, Red for feeders
@@ -23,36 +32,43 @@ class BeeDetector:
         img = cv2.resize(img, (640, 640))
         # Convert to RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Normalize pixel values
+        img = img.astype(np.float32) / 255.0
+        
         return img
         
     def detect(self, img):
         """Run detection on preprocessed image"""
         # Convert to NCNN format
-        blob = ncnn.Mat.from_pixels(img, ncnn.Mat.PixelType.PIXEL_RGB, 640, 640)
+        blob = ncnn.Mat(img)
         
         # Create extractor
         ex = self.net.create_extractor()
-        ex.input("images", blob)
+        ex.input(self.input_name, blob)
         
         # Get output
-        ret, out = ex.extract("output")
+        _, out = ex.extract(self.output_name)
         
         return self.process_output(out)
     
     def process_output(self, output):
         """Process NCNN output to bounding boxes"""
-        # Convert output to numpy array
         detections = []
-        rows = output.h
-        for row in range(rows):
-            confidence = output.row(row)[4]
+        
+        # Convert NCNN Mat to numpy array
+        out_array = np.array(output)
+        
+        # Process each detection
+        for detection in out_array:
+            confidence = detection[4]
             
             if confidence >= self.conf_thresh:
-                class_id = int(output.row(row)[5])
-                x1 = output.row(row)[0] * self.orig_w / 640
-                y1 = output.row(row)[1] * self.orig_h / 640
-                x2 = output.row(row)[2] * self.orig_w / 640
-                y2 = output.row(row)[3] * self.orig_h / 640
+                class_id = int(detection[5])
+                x1 = detection[0] * self.orig_w / 640
+                y1 = detection[1] * self.orig_h / 640
+                x2 = detection[2] * self.orig_w / 640
+                y2 = detection[3] * self.orig_h / 640
                 
                 detections.append({
                     'class': self.class_names[class_id],
@@ -92,27 +108,32 @@ def process_video(input_path, output_path, detector):
         # Process frame
         start_time = time.time()
         
-        # Preprocess
-        processed_frame = detector.preprocess_image(frame)
-        
-        # Detect
-        detections = detector.detect(processed_frame)
-        
-        # Draw detections
-        for det in detections:
-            x1, y1, x2, y2 = det['bbox']
-            class_name = det['class']
-            conf = det['confidence']
-            color = detector.colors[detector.class_names.index(class_name)]
+        try:
+            # Preprocess
+            processed_frame = detector.preprocess_image(frame)
             
-            # Draw box
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            # Detect
+            detections = detector.detect(processed_frame)
             
-            # Draw label
-            label = f"{class_name} {conf:.2f}"
-            cv2.putText(frame, label, (x1, y1-10), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            # Draw detections
+            for det in detections:
+                x1, y1, x2, y2 = det['bbox']
+                class_name = det['class']
+                conf = det['confidence']
+                color = detector.colors[detector.class_names.index(class_name)]
+                
+                # Draw box
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                
+                # Draw label
+                label = f"{class_name} {conf:.2f}"
+                cv2.putText(frame, label, (x1, y1-10), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         
+        except Exception as e:
+            print(f"Error processing frame {frame_count}: {str(e)}")
+            continue
+            
         # Calculate FPS
         process_time = time.time() - start_time
         processing_times.append(process_time)
@@ -133,10 +154,11 @@ def process_video(input_path, output_path, detector):
     out.release()
     
     # Print statistics
-    avg_fps = 1.0 / np.mean(processing_times)
-    print(f"\nProcessing complete!")
-    print(f"Average FPS: {avg_fps:.1f}")
-    print(f"Output saved to: {output_path}")
+    if processing_times:
+        avg_fps = 1.0 / np.mean(processing_times)
+        print(f"\nProcessing complete!")
+        print(f"Average FPS: {avg_fps:.1f}")
+        print(f"Output saved to: {output_path}")
 
 if __name__ == "__main__":
     # Paths
