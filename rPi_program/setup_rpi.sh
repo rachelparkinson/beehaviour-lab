@@ -16,11 +16,13 @@ sudo apt-get install -y \
     python3-smbus \
     python3-numpy \
     nano \
-    raspi-config
+    raspi-config \
+    libcap-dev
 
 # ---- REMOVE TIGERVNC IF INSTALLED ----
 echo "Removing TigerVNC to avoid conflicts with RealVNC..."
 sudo apt-get remove -y tigervnc-standalone-server tigervnc-common || true
+
 
 # ---- CREATE VENV ----
 echo "Creating virtual environment..."
@@ -37,8 +39,7 @@ pip install \
     opencv-python \
     picamera2 \
     RPi.GPIO \
-    board \
-    busio
+    board
 
 # ---- BASHRC PATH FIX (OPTIONAL) ----
 echo "Ensuring ~/.local/bin is in PATH..."
