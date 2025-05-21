@@ -19,10 +19,6 @@ sudo apt-get install -y \
     raspi-config \
     libcap-dev
 
-# ---- REMOVE TIGERVNC IF INSTALLED ----
-echo "Removing TigerVNC to avoid conflicts with RealVNC..."
-sudo apt-get remove -y tigervnc-standalone-server tigervnc-common || true
-
 
 # ---- CREATE VENV ----
 echo "Creating virtual environment..."
@@ -30,7 +26,9 @@ python3 -m venv ~/venv
 source ~/venv/bin/activate
 
 echo "Installing pip packages into virtualenv..."
-pip install --upgrade pip
+# Install torch separately if needed to avoid slow build or failure
+pip install --extra-index-url https://www.piwheels.org/simple torch
+
 pip install \
     adafruit-circuitpython-dht \
     adafruit-circuitpython-ssd1306 \
@@ -39,7 +37,21 @@ pip install \
     opencv-python \
     picamera2 \
     RPi.GPIO \
-    board
+    board \
+    ncnn \
+
+    matplotlib \
+    pyyaml \
+    scipy \
+    torchvision \
+    psutil \
+    pandas \
+    onnx \
+    openvino \
+    "flatbuffers>=23.5.26,<100" \
+    numpy==1.23.5 \
+    h5py!=3.11.0 \
+    coremltools>=7.0
 
 # ---- BASHRC PATH FIX (OPTIONAL) ----
 echo "Ensuring ~/.local/bin is in PATH..."

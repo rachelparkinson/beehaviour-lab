@@ -32,13 +32,16 @@ Start with:
 4. rPi configuration
 
 # Download setup file from GitHub:
-wget https://github.com/rachelparkinson/beehaviour-lab/archive/refs/heads/main.zip
+wget https://raw.githubusercontent.com/rachelparkinson/beehaviour-lab/refs/heads/main/rPi_program/setup_rpi.sh
 
-# Unzip and run:
-unzip main.zip
-cd beehaviour-lab-main/rPi_program
+# Install it on rPi
 chmod +x setup_rpi.sh
 ./setup_rpi.sh
+
+# Install Ultralytics (this takes awhile)
+pip install ultralytics ncnn 
+
+
 
 ## ---------------------- ##
 
@@ -79,4 +82,49 @@ cd ~/rPi_program
 chmod +x ssd_setup.sh    # (only needed once to make it executable)
 ./ssd_setup.sh
 
+
+## ----------------------- ##
+
+9. Get Ultralytics
+
+#Download onto Mac
+
+mkdir ~/ultralytics_packages
+cd ~/ultralytics_packages
+
+pip3 download "ultralytics[export]"
+
+# Transfer folder to Pi
+scp -r ~/ultralytics_packages rPi21@<raspberry_pi_ip>:/home/rPi21/
+
+
+# On Pi, activate vent
+source ~/venv/bin/activate
+
+#Activate packages offline
+cd ~/ultralytics_packages
+pip install --no-index --find-links=. ultralytics[export]
+
+
+
+## ----------------------- ##
+
+9. Test YOLO ncnn inference
+
+# move test file to rPi 
+scp -r /Users/user/Documents/beehaviour-lab/example_data/trim_vid_5bees1feeder.mp4 rPi21@172.20.10.2:/home/rPi21/
+
+From: https://www.ejtech.io/learn/yolo-on-raspberry-pi
+
+wget https://ejtech.io/code/yolo_detect.py
+
+The script takes three arguments, “model”, “source”, and “resolution”:
+
+- - model: Path to the trained model weights (e.g. “runs/detect/train/weights/yolo11n_ncnn_model”)
+- - source: Path to an image file (“test_img.jpg”), a folder of images (“img_dir”), a video file (“test_vid.mp4”), or the index for a connected USB camera (“usb0”).
+- - resolution (optional): Resolution in WxH to display inference results at. If not specified, the program will match the source resolution.
+
+python yolo_detect.py --model=yolo11n_ncnn_model --source=usb0 --resolution=640x480
+
+python yolo_detect.py --model=rPi_program/bee_detector --source=trim_vid_5bees1feeder.mp4 --resolution=640x360
 
